@@ -1,19 +1,29 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { CalendarCheck, Plus } from 'lucide-react';
+import { CalendarCheck, Plus, Edit, XCircle } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 const PatientAppointments = () => {
   const navigate = useNavigate();
 
   // Mock data for appointments - replace with actual data fetching
   const appointments = [
-    { id: '1', doctorName: 'Dr. Emily Carter', specialty: 'Cardiology', date: '2025-06-10', time: '10:00 AM', status: 'Confirmed' },
-    { id: '2', doctorName: 'Dr. John Smith', specialty: 'Dermatology', date: '2025-06-15', time: '02:30 PM', status: 'Pending' },
-    { id: '3', doctorName: 'Dr. Sarah Lee', specialty: 'Pediatrics', date: '2025-05-20', time: '11:00 AM', status: 'Completed' },
+    { id: 'appt101', doctorName: 'Dr. Emily Carter', specialty: 'Cardiology', date: '2025-06-10', time: '10:00 AM', status: 'Confirmed' },
+    { id: 'appt102', doctorName: 'Dr. John Smith', specialty: 'Dermatology', date: '2025-06-15', time: '02:30 PM', status: 'Pending' },
+    { id: 'appt103', doctorName: 'Dr. Sarah Lee', specialty: 'Pediatrics', date: '2025-05-20', time: '11:00 AM', status: 'Completed' },
   ];
+
+  const handleCancelAppointment = (appointmentId: string) => {
+    // In a real app, this would update appointment status via API
+    toast({
+      title: "Appointment Cancelled",
+      description: `Your appointment (ID: ${appointmentId}) has been cancelled.`,
+      variant: "destructive",
+    });
+    // Optionally, update local state or re-fetch appointments
+  };
 
   return (
     <div className="space-y-6">
@@ -30,7 +40,7 @@ const PatientAppointments = () => {
           <CardContent className="p-6 text-center">
             <CalendarCheck size={48} className="mx-auto text-gray-400 mb-4" />
             <p className="text-gray-600">You have no appointments scheduled.</p>
-            <Button onClick={() => navigate('/patient/book-appointment')} className="mt-4">
+            <Button onClick={() => navigate('/patient/book-appointment')} className="mt-4 bg-medical-blue hover:bg-medical-darkblue">
               Book an Appointment
             </Button>
           </CardContent>
@@ -62,15 +72,29 @@ const PatientAppointments = () => {
                 <p className="text-sm text-gray-700"><strong>Date:</strong> {appt.date}</p>
                 <p className="text-sm text-gray-700"><strong>Time:</strong> {appt.time}</p>
                 <div className="flex space-x-2 mt-4">
-                  <Button variant="outline" size="sm" disabled={appt.status === 'Completed'}>Reschedule</Button>
-                  <Button variant="outline" size="sm" disabled={appt.status === 'Completed'} className="text-red-600 hover:bg-red-50 hover:text-red-700 border-red-300 hover:border-red-400">Cancel</Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    disabled={appt.status === 'Completed'}
+                    onClick={() => appt.status !== 'Completed' && navigate(`/patient/appointments/${appt.id}/reschedule`)}
+                  >
+                    <Edit size={14} className="mr-1" /> Reschedule
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    disabled={appt.status === 'Completed'} 
+                    className="text-red-600 hover:bg-red-50 hover:text-red-700 border-red-300 hover:border-red-400"
+                    onClick={() => appt.status !== 'Completed' && handleCancelAppointment(appt.id)}
+                  >
+                    <XCircle size={14} className="mr-1" /> Cancel
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
-      <p className="text-center text-gray-500 text-sm mt-8">This is a placeholder page for Patient Appointments. Full functionality will be implemented later.</p>
     </div>
   );
 };

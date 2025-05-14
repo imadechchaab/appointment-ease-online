@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -7,12 +8,17 @@ import { Users, Search, PlusCircle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const DoctorPatients = () => {
+  const navigate = useNavigate();
   // Mock data - replace with actual data fetching
   const patients = [
     { id: '1', name: 'Alice Wonderland', email: 'alice@example.com', lastVisit: '2025-05-10', avatarUrl: 'https://randomuser.me/api/portraits/women/60.jpg' },
     { id: '2', name: 'Bob The Builder', email: 'bob@example.com', lastVisit: '2025-04-22', avatarUrl: 'https://randomuser.me/api/portraits/men/45.jpg' },
     { id: '3', name: 'Charlie Brown', email: 'charlie@example.com', lastVisit: '2025-06-01', avatarUrl: 'https://randomuser.me/api/portraits/men/78.jpg' },
   ];
+
+  const handleAddPatient = () => {
+    navigate('/doctor/patients/add');
+  };
 
   return (
     <div className="space-y-6">
@@ -23,7 +29,7 @@ const DoctorPatients = () => {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                 <Input placeholder="Search patients..." className="pl-10" />
             </div>
-            <Button className="bg-medical-blue hover:bg-medical-darkblue">
+            <Button onClick={handleAddPatient} className="bg-medical-blue hover:bg-medical-darkblue">
                 <PlusCircle size={16} className="mr-2" /> Add Patient
             </Button>
         </div>
@@ -34,7 +40,9 @@ const DoctorPatients = () => {
           <CardContent className="p-6 text-center">
             <Users size={48} className="mx-auto text-gray-400 mb-4" />
             <p className="text-gray-600">You have no patients yet.</p>
-            <Button className="mt-4">Add Your First Patient</Button>
+            <Button onClick={handleAddPatient} className="mt-4 bg-medical-blue hover:bg-medical-darkblue">
+                <PlusCircle size={16} className="mr-2" /> Add Your First Patient
+            </Button>
           </CardContent>
         </Card>
       ) : (
@@ -67,7 +75,13 @@ const DoctorPatients = () => {
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{patient.email}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{patient.lastVisit}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <Button variant="link" className="text-medical-blue p-0 h-auto">View Profile</Button>
+                                        <Button 
+                                          variant="link" 
+                                          className="text-medical-blue p-0 h-auto"
+                                          onClick={() => navigate(`/doctor/patients/${patient.id}/profile`)}
+                                        >
+                                          View Profile
+                                        </Button>
                                     </td>
                                 </tr>
                             ))}
@@ -77,7 +91,7 @@ const DoctorPatients = () => {
             </CardContent>
         </Card>
       )}
-      <p className="text-center text-gray-500 text-sm mt-8">This is a placeholder page for Doctor Patients. Full functionality will be implemented later.</p>
+      {/* Removed placeholder text */}
     </div>
   );
 };

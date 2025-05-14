@@ -1,16 +1,39 @@
-
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CalendarDays, UserCheck, XCircle } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 const DoctorAppointments = () => {
+  const navigate = useNavigate();
   // Mock data - replace with actual data fetching
   const appointments = [
     { id: '1', patientName: 'Alice Wonderland', service: 'Consultation', date: '2025-06-10', time: '10:00 AM', status: 'Confirmed' },
     { id: '2', patientName: 'Bob The Builder', service: 'Follow-up', date: '2025-06-10', time: '11:30 AM', status: 'Pending Confirmation' },
     { id: '3', patientName: 'Charlie Brown', service: 'New Patient Visit', date: '2025-06-11', time: '09:00 AM', status: 'Completed' },
+    { id: '4', patientName: 'Diana Prince', service: 'Check-up', date: '2025-06-12', time: '02:00 PM', status: 'Pending Confirmation' },
   ];
+
+  const handleConfirm = (appointmentId: string) => {
+    // In a real app, this would update the appointment status via API
+    toast({
+      title: "Appointment Confirmed!",
+      description: `Appointment ID ${appointmentId} has been confirmed.`,
+      variant: "default", // or "success" if you have that style
+    });
+    // Here you might want to re-fetch appointments or update local state
+  };
+
+  const handleDecline = (appointmentId: string) => {
+    // In a real app, this would update the appointment status via API
+    toast({
+      title: "Appointment Declined",
+      description: `Appointment ID ${appointmentId} has been declined.`,
+      variant: "destructive",
+    });
+     // Here you might want to re-fetch appointments or update local state
+  };
 
   return (
     <div className="space-y-6">
@@ -55,26 +78,57 @@ const DoctorAppointments = () => {
                 <p className="text-sm text-gray-700"><strong>Time:</strong> {appt.time}</p>
                 {appt.status === 'Pending Confirmation' && (
                   <div className="flex space-x-2 mt-4">
-                    <Button size="sm" className="bg-green-500 hover:bg-green-600">
+                    <Button 
+                      size="sm" 
+                      className="bg-green-500 hover:bg-green-600"
+                      onClick={() => handleConfirm(appt.id)}
+                    >
                         <UserCheck size={14} className="mr-1" /> Confirm
                     </Button>
-                    <Button variant="outline" size="sm" className="text-red-600 hover:bg-red-50">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-red-600 hover:bg-red-50"
+                      onClick={() => handleDecline(appt.id)}
+                    >
                         <XCircle size={14} className="mr-1" /> Decline
                     </Button>
                   </div>
                 )}
                  {appt.status === 'Confirmed' && (
                   <div className="flex space-x-2 mt-4">
-                    <Button variant="outline" size="sm">View Details</Button>
-                    <Button variant="outline" size="sm">Reschedule</Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => navigate(`/doctor/appointments/${appt.id}/details`)}
+                    >
+                      View Details
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => navigate(`/doctor/appointments/${appt.id}/reschedule`)}
+                    >
+                      Reschedule
+                    </Button>
                   </div>
                 )}
+                 {appt.status === 'Completed' && (
+                     <div className="flex space-x-2 mt-4">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => navigate(`/doctor/appointments/${appt.id}/details`)}
+                        >
+                          View Details
+                        </Button>
+                     </div>
+                 )}
               </CardContent>
             </Card>
           ))}
         </div>
       )}
-      <p className="text-center text-gray-500 text-sm mt-8">This is a placeholder page for Doctor Appointments. Full functionality will be implemented later.</p>
     </div>
   );
 };

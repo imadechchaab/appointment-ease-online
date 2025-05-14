@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,6 +21,12 @@ import ProfileSettings from "./pages/ProfileSettings";
 import PatientAppointments from "./pages/PatientAppointments"; 
 import DoctorAppointments from "./pages/DoctorAppointments";
 import DoctorPatients from "./pages/DoctorPatients";
+
+// New placeholder page imports
+import AppointmentDetailsPage from "./pages/AppointmentDetailsPage";
+import RescheduleAppointmentPage from "./pages/RescheduleAppointmentPage";
+import AddPatientPage from "./pages/AddPatientPage";
+import ViewPatientProfilePage from "./pages/ViewPatientProfilePage";
 
 // Layouts
 import DashboardLayout from "./components/layouts/DashboardLayout";
@@ -60,7 +65,7 @@ const App = () => (
                 </DashboardLayout>
               </PrivateRoute>
             } />
-            <Route path="/patient/appointments" element={ // New Route
+            <Route path="/patient/appointments" element={ 
               <PrivateRoute allowedRoles={['patient']}>
                 <DashboardLayout>
                   <PatientAppointments />
@@ -68,6 +73,13 @@ const App = () => (
               </PrivateRoute>
             } />
             {/* Route for /patient/records removed as feature is removed from UI */}
+            <Route path="/patient/appointments/:appointmentId/reschedule" element={
+              <PrivateRoute allowedRoles={['patient']}>
+                <DashboardLayout>
+                  <RescheduleAppointmentPage />
+                </DashboardLayout>
+              </PrivateRoute>
+            } />
             <Route path="/patient/profile" element={
               <PrivateRoute allowedRoles={['patient']}>
                 <DashboardLayout>
@@ -84,17 +96,45 @@ const App = () => (
                 </DashboardLayout>
               </PrivateRoute>
             } />
-            <Route path="/doctor/appointments" element={ // New Route
+            <Route path="/doctor/appointments" element={ 
               <PrivateRoute allowedRoles={['doctor']}>
                 <DashboardLayout>
                   <DoctorAppointments />
                 </DashboardLayout>
               </PrivateRoute>
             } />
-            <Route path="/doctor/patients" element={ // New Route
+            <Route path="/doctor/appointments/:appointmentId/details" element={
+              <PrivateRoute allowedRoles={['doctor']}>
+                <DashboardLayout>
+                  <AppointmentDetailsPage />
+                </DashboardLayout>
+              </PrivateRoute>
+            } />
+            <Route path="/doctor/appointments/:appointmentId/reschedule" element={
+              <PrivateRoute allowedRoles={['doctor']}>
+                <DashboardLayout>
+                  <RescheduleAppointmentPage />
+                </DashboardLayout>
+              </PrivateRoute>
+            } />
+            <Route path="/doctor/patients" element={ 
               <PrivateRoute allowedRoles={['doctor']}>
                 <DashboardLayout>
                   <DoctorPatients />
+                </DashboardLayout>
+              </PrivateRoute>
+            } />
+            <Route path="/doctor/patients/add" element={ 
+              <PrivateRoute allowedRoles={['doctor']}>
+                <DashboardLayout>
+                  <AddPatientPage />
+                </DashboardLayout>
+              </PrivateRoute>
+            } />
+            <Route path="/doctor/patients/:patientId/profile" element={ 
+              <PrivateRoute allowedRoles={['doctor']}>
+                <DashboardLayout>
+                  <ViewPatientProfilePage />
                 </DashboardLayout>
               </PrivateRoute>
             } />
