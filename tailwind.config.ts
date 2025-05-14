@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -52,6 +53,16 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+        medical: {
+          blue: '#2C7BE5',
+          lightblue: '#5D9CEC',
+          darkblue: '#1A56A0',
+          green: '#42BA96',
+          red: '#DF4759',
+          orange: '#FF8C39',
+          gray: '#95AAC9',
+          lightgray: '#F8F9FA'
+        },
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -89,7 +100,11 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out'
-			}
+			},
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+        body: ['Open Sans', 'sans-serif'],
+      }
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
