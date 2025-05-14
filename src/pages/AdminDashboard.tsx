@@ -1,17 +1,4 @@
-
-import { 
-  Users, 
-  UserCheck,
-  AlertTriangle,
-  BarChart,
-  Calendar,
-  Star,
-  ChevronRight,
-  Search,
-  Settings,
-  TrendingUp,
-  TrendingDown
-} from 'lucide-react';
+import { Users, UserCheck, AlertTriangle, BarChart, Calendar, Star, ChevronRight, Search, Settings, TrendingUp, TrendingDown } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,65 +7,56 @@ import { useAuth } from '@/context/AuthContext';
 import { useState } from 'react';
 
 // Mock data for doctors pending approval
-const pendingDoctors = [
-  {
-    id: "1",
-    name: "Dr. Mark Thompson",
-    specialization: "Neurology",
-    image: "https://randomuser.me/api/portraits/men/72.jpg",
-    appliedOn: "2025-05-10"
-  },
-  {
-    id: "2",
-    name: "Dr. Laura Garcia",
-    specialization: "Pediatrics",
-    image: "https://randomuser.me/api/portraits/women/78.jpg",
-    appliedOn: "2025-05-12"
-  },
-  {
-    id: "3",
-    name: "Dr. James Wilson",
-    specialization: "Cardiology",
-    image: "https://randomuser.me/api/portraits/men/45.jpg", 
-    appliedOn: "2025-05-13"
-  }
-];
+const pendingDoctors = [{
+  id: "1",
+  name: "Dr. Mark Thompson",
+  specialization: "Neurology",
+  image: "https://randomuser.me/api/portraits/men/72.jpg",
+  appliedOn: "2025-05-10"
+}, {
+  id: "2",
+  name: "Dr. Laura Garcia",
+  specialization: "Pediatrics",
+  image: "https://randomuser.me/api/portraits/women/78.jpg",
+  appliedOn: "2025-05-12"
+}, {
+  id: "3",
+  name: "Dr. James Wilson",
+  specialization: "Cardiology",
+  image: "https://randomuser.me/api/portraits/men/45.jpg",
+  appliedOn: "2025-05-13"
+}];
 
 // Mock data for system users
-const recentUsers = [
-  {
-    id: "1",
-    name: "John Smith",
-    role: "Patient",
-    image: "https://randomuser.me/api/portraits/men/32.jpg",
-    joinedOn: "2025-05-01",
-    status: "active"
-  },
-  {
-    id: "2",
-    name: "Dr. Sarah Johnson",
-    role: "Doctor",
-    image: "https://randomuser.me/api/portraits/women/44.jpg",
-    joinedOn: "2025-04-28",
-    status: "active"
-  },
-  {
-    id: "3",
-    name: "Robert Davis",
-    role: "Patient",
-    image: "https://randomuser.me/api/portraits/men/29.jpg",
-    joinedOn: "2025-05-05",
-    status: "blocked"
-  },
-  {
-    id: "4",
-    name: "Dr. Emily Chen",
-    role: "Doctor",
-    image: "https://randomuser.me/api/portraits/women/30.jpg",
-    joinedOn: "2025-05-02",
-    status: "active"
-  }
-];
+const recentUsers = [{
+  id: "1",
+  name: "John Smith",
+  role: "Patient",
+  image: "https://randomuser.me/api/portraits/men/32.jpg",
+  joinedOn: "2025-05-01",
+  status: "active"
+}, {
+  id: "2",
+  name: "Dr. Sarah Johnson",
+  role: "Doctor",
+  image: "https://randomuser.me/api/portraits/women/44.jpg",
+  joinedOn: "2025-04-28",
+  status: "active"
+}, {
+  id: "3",
+  name: "Robert Davis",
+  role: "Patient",
+  image: "https://randomuser.me/api/portraits/men/29.jpg",
+  joinedOn: "2025-05-05",
+  status: "blocked"
+}, {
+  id: "4",
+  name: "Dr. Emily Chen",
+  role: "Doctor",
+  image: "https://randomuser.me/api/portraits/women/30.jpg",
+  joinedOn: "2025-05-02",
+  status: "active"
+}];
 
 // Mock data for system statistics
 const systemStats = {
@@ -90,53 +68,47 @@ const systemStats = {
 };
 
 // Mock data for recent appointments
-const recentAppointments = [
-  {
-    id: "1", 
-    doctor: "Dr. Sarah Johnson",
-    patient: "John Smith",
-    date: "2025-05-14",
-    time: "10:30 AM",
-    status: "completed"
-  },
-  {
-    id: "2",
-    doctor: "Dr. Emily Chen",
-    patient: "Mary Johnson",
-    date: "2025-05-14",
-    time: "11:45 AM",
-    status: "completed"
-  },
-  {
-    id: "3",
-    doctor: "Dr. James Wilson",
-    patient: "Robert Davis",
-    date: "2025-05-14",
-    time: "2:15 PM",
-    status: "ongoing"
-  }
-];
-
+const recentAppointments = [{
+  id: "1",
+  doctor: "Dr. Sarah Johnson",
+  patient: "John Smith",
+  date: "2025-05-14",
+  time: "10:30 AM",
+  status: "completed"
+}, {
+  id: "2",
+  doctor: "Dr. Emily Chen",
+  patient: "Mary Johnson",
+  date: "2025-05-14",
+  time: "11:45 AM",
+  status: "completed"
+}, {
+  id: "3",
+  doctor: "Dr. James Wilson",
+  patient: "Robert Davis",
+  date: "2025-05-14",
+  time: "2:15 PM",
+  status: "ongoing"
+}];
 const AdminDashboard = () => {
-  const { user } = useAuth();
+  const {
+    user
+  } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   // Format date
   const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+    const options: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
-  
+
   // Filter users based on search term
-  const filteredUsers = searchTerm
-    ? recentUsers.filter(user => 
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.role.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : recentUsers;
-  
-  return (
-    <div className="space-y-8">
+  const filteredUsers = searchTerm ? recentUsers.filter(user => user.name.toLowerCase().includes(searchTerm.toLowerCase()) || user.role.toLowerCase().includes(searchTerm.toLowerCase())) : recentUsers;
+  return <div className="space-y-8">
       {/* Welcome Section */}
       <Card className="bg-gradient-to-r from-medical-blue/80 to-medical-darkblue text-white">
         <CardContent className="p-6">
@@ -146,9 +118,7 @@ const AdminDashboard = () => {
               <p className="mt-2 text-white/80">MediBook Administrator Dashboard</p>
             </div>
             
-            <Button 
-              className="mt-4 md:mt-0 bg-white text-medical-blue hover:bg-gray-100"
-            >
+            <Button className="mt-4 md:mt-0 bg-white text-medical-blue hover:bg-gray-100">
               <Settings size={16} className="mr-2" /> System Settings
             </Button>
           </div>
@@ -222,25 +192,16 @@ const AdminDashboard = () => {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-gray-800">Doctor Approval Requests</h2>
-          <Button 
-            variant="outline" 
-            className="text-sm"
-          >
+          <Button variant="outline" className="text-sm">
             View All
           </Button>
         </div>
         
-        {pendingDoctors.length > 0 ? (
-          <Card>
+        {pendingDoctors.length > 0 ? <Card>
             <div className="divide-y">
-              {pendingDoctors.map((doctor) => (
-                <div key={doctor.id} className="p-4 flex items-center justify-between">
+              {pendingDoctors.map(doctor => <div key={doctor.id} className="p-4 flex items-center justify-between">
                   <div className="flex items-center">
-                    <img 
-                      src={doctor.image} 
-                      alt={doctor.name} 
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
+                    <img src={doctor.image} alt={doctor.name} className="w-12 h-12 rounded-full object-cover" />
                     <div className="ml-4">
                       <h4 className="font-medium text-gray-800">{doctor.name}</h4>
                       <p className="text-sm text-gray-500">
@@ -257,12 +218,9 @@ const AdminDashboard = () => {
                       Approve
                     </Button>
                   </div>
-                </div>
-              ))}
+                </div>)}
             </div>
-          </Card>
-        ) : (
-          <Card>
+          </Card> : <Card>
             <CardContent className="p-6 text-center">
               <div className="py-8">
                 <UserCheck className="mx-auto h-12 w-12 text-gray-400" />
@@ -270,8 +228,7 @@ const AdminDashboard = () => {
                 <p className="mt-1 text-sm text-gray-500">All doctor registration requests have been processed.</p>
               </div>
             </CardContent>
-          </Card>
-        )}
+          </Card>}
       </div>
       
       {/* System Users */}
@@ -281,12 +238,7 @@ const AdminDashboard = () => {
             <h2 className="text-xl font-bold text-gray-800">System Users</h2>
             <div className="relative w-64">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-              <Input 
-                placeholder="Search users..." 
-                className="pl-9"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+              <Input placeholder="Search users..." className="pl-9" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
             </div>
           </div>
           
@@ -301,24 +253,15 @@ const AdminDashboard = () => {
                 <div className="w-16"></div>
               </div>
               
-              {filteredUsers.map((user) => (
-                <div key={user.id} className="p-4 flex items-center">
-                  <img 
-                    src={user.image} 
-                    alt={user.name} 
-                    className="w-12 h-12 rounded-full object-cover"
-                  />
+              {filteredUsers.map(user => <div key={user.id} className="p-4 flex items-center">
+                  <img src={user.image} alt={user.name} className="w-12 h-12 rounded-full object-cover" />
                   <div className="ml-4 flex-1">
                     <h4 className="font-medium text-gray-800">{user.name}</h4>
                     <p className="text-sm text-gray-500 hidden md:block">User #{user.id}</p>
                   </div>
                   
                   <div className="w-24 text-center">
-                    <span className={`text-sm px-2 py-1 rounded-full ${
-                      user.role === 'Patient' 
-                        ? 'bg-blue-100 text-blue-700' 
-                        : 'bg-green-100 text-green-700'
-                    }`}>
+                    <span className={`text-sm px-2 py-1 rounded-full ${user.role === 'Patient' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
                       {user.role}
                     </span>
                   </div>
@@ -330,22 +273,14 @@ const AdminDashboard = () => {
                   </div>
                   
                   <div className="w-24 text-center">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      user.status === 'active'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-red-100 text-red-700'
-                    }`}>
-                      {user.status === 'active' ? (
-                        <>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${user.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {user.status === 'active' ? <>
                           <span className="w-1.5 h-1.5 rounded-full bg-green-600 mr-1"></span>
                           Active
-                        </>
-                      ) : (
-                        <>
+                        </> : <>
                           <span className="w-1.5 h-1.5 rounded-full bg-red-600 mr-1"></span>
                           Blocked
-                        </>
-                      )}
+                        </>}
                     </span>
                   </div>
                   
@@ -354,8 +289,7 @@ const AdminDashboard = () => {
                       <ChevronRight size={18} />
                     </Button>
                   </div>
-                </div>
-              ))}
+                </div>)}
             </div>
             
             <div className="p-4 border-t text-center">
@@ -377,13 +311,8 @@ const AdminDashboard = () => {
               <h3 className="font-medium text-gray-700 mb-4">Recent Activity</h3>
               
               <div className="space-y-4">
-                {recentAppointments.map((appointment) => (
-                  <div key={appointment.id} className="flex items-start">
-                    <div className={`p-2 rounded-full ${
-                      appointment.status === 'completed' 
-                        ? 'bg-green-100 text-green-600' 
-                        : 'bg-blue-100 text-blue-600'
-                    }`}>
+                {recentAppointments.map(appointment => <div key={appointment.id} className="flex items-start">
+                    <div className={`p-2 rounded-full ${appointment.status === 'completed' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
                       <Calendar size={16} />
                     </div>
                     <div className="ml-3">
@@ -392,15 +321,12 @@ const AdminDashboard = () => {
                       </p>
                       <p className="text-xs text-gray-500">
                         {formatDate(appointment.date)} at {appointment.time} • 
-                        <span className={`ml-1 ${
-                          appointment.status === 'completed' ? 'text-green-600' : 'text-blue-600'
-                        }`}>
+                        <span className={`ml-1 ${appointment.status === 'completed' ? 'text-green-600' : 'text-blue-600'}`}>
                           {appointment.status === 'completed' ? 'Completed' : 'Ongoing'}
                         </span>
                       </p>
                     </div>
-                  </div>
-                ))}
+                  </div>)}
               </div>
             </CardContent>
           </Card>
@@ -416,7 +342,9 @@ const AdminDashboard = () => {
                     <span className="font-medium">68%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-yellow-500 h-2 rounded-full" style={{ width: '68%' }}></div>
+                    <div className="bg-yellow-500 h-2 rounded-full" style={{
+                    width: '68%'
+                  }}></div>
                   </div>
                 </div>
                 
@@ -426,7 +354,9 @@ const AdminDashboard = () => {
                     <span className="font-medium">42%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-green-500 h-2 rounded-full" style={{ width: '42%' }}></div>
+                    <div className="bg-green-500 h-2 rounded-full" style={{
+                    width: '42%'
+                  }}></div>
                   </div>
                 </div>
                 
@@ -436,7 +366,9 @@ const AdminDashboard = () => {
                     <span className="font-medium">234ms</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-medical-blue h-2 rounded-full" style={{ width: '30%' }}></div>
+                    <div className="bg-medical-blue h-2 rounded-full" style={{
+                    width: '30%'
+                  }}></div>
                   </div>
                 </div>
                 
@@ -494,7 +426,7 @@ const AdminDashboard = () => {
       
       {/* System Alerts */}
       <Card className="bg-yellow-50 border border-yellow-200">
-        <CardContent className="p-6">
+        <CardContent className="">
           <div className="flex">
             <div className="flex-shrink-0">
               <AlertTriangle className="h-6 w-6 text-yellow-500" />
@@ -517,8 +449,6 @@ const AdminDashboard = () => {
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 };
-
 export default AdminDashboard;
