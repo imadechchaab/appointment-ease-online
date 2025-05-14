@@ -1,71 +1,82 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { 
-  Calendar, 
-  Search, 
-  FileText, 
-  Clock, 
-  Award, // This icon was used for a removed element, but import might be kept by linter
-  Phone, // This icon was used for a removed element
-  CheckCircle,
-  ArrowRight, // This icon usage is being removed from specialties
-  Users, // This icon was used for a removed element
-  Activity // Using Activity for the logo now
+import { Calendar, Search, FileText, Clock, Award,
+// This icon was used for a removed element, but import might be kept by linter
+Phone,
+// This icon was used for a removed element
+CheckCircle, ArrowRight,
+// This icon usage is being removed from specialties
+Users,
+// This icon was used for a removed element
+Activity // Using Activity for the logo now
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 // Mock data for specialties
-const specialties = [
-  { id: 1, name: "Cardiology", icon: "❤️" },
-  { id: 2, name: "Neurology", icon: "🧠" },
-  { id: 3, name: "Pediatrics", icon: "👶" },
-  { id: 4, name: "Dermatology", icon: "🧬" },
-  { id: 5, name: "Orthopedics", icon: "🦴" },
-  { id: 6, name: "Psychiatry", icon: "🧘" },
-];
+const specialties = [{
+  id: 1,
+  name: "Cardiology",
+  icon: "❤️"
+}, {
+  id: 2,
+  name: "Neurology",
+  icon: "🧠"
+}, {
+  id: 3,
+  name: "Pediatrics",
+  icon: "👶"
+}, {
+  id: 4,
+  name: "Dermatology",
+  icon: "🧬"
+}, {
+  id: 5,
+  name: "Orthopedics",
+  icon: "🦴"
+}, {
+  id: 6,
+  name: "Psychiatry",
+  icon: "🧘"
+}];
 
 // Mock data for testimonials
-const testimonials = [
-  {
-    id: 1,
-    text: "OnlineDoc made it so easy to find a specialist and book an appointment. Saved me hours of phone calls!",
-    author: "Sarah Johnson",
-    role: "Patient",
-    avatar: "https://randomuser.me/api/portraits/women/12.jpg"
-  },
-  {
-    id: 2,
-    text: "As a doctor, this platform helps me manage my practice more efficiently. The scheduling system is flawless.",
-    author: "Dr. Michael Chen",
-    role: "Cardiologist",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg"
-  },
-  {
-    id: 3,
-    text: "I love how I can access all my medical records and appointment history in one place. Highly recommend!",
-    author: "James Wilson",
-    role: "Patient",
-    avatar: "https://randomuser.me/api/portraits/men/67.jpg"
-  }
-];
-
+const testimonials = [{
+  id: 1,
+  text: "OnlineDoc made it so easy to find a specialist and book an appointment. Saved me hours of phone calls!",
+  author: "Sarah Johnson",
+  role: "Patient",
+  avatar: "https://randomuser.me/api/portraits/women/12.jpg"
+}, {
+  id: 2,
+  text: "As a doctor, this platform helps me manage my practice more efficiently. The scheduling system is flawless.",
+  author: "Dr. Michael Chen",
+  role: "Cardiologist",
+  avatar: "https://randomuser.me/api/portraits/men/32.jpg"
+}, {
+  id: 3,
+  text: "I love how I can access all my medical records and appointment history in one place. Highly recommend!",
+  author: "James Wilson",
+  role: "Patient",
+  avatar: "https://randomuser.me/api/portraits/men/67.jpg"
+}];
 const Home = () => {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
-  const { user, isAuthenticated } = useAuth();
+  const {
+    user,
+    isAuthenticated
+  } = useAuth();
   const navigate = useNavigate();
-  
+
   // Auto rotate testimonials
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveTestimonial(prev => (prev + 1) % testimonials.length);
     }, 5000);
-    
     return () => clearInterval(interval);
   }, []);
-  
+
   // Redirect based on role if logged in
   const handleGetStarted = () => {
     if (isAuthenticated && user) {
@@ -74,9 +85,7 @@ const Home = () => {
       navigate('/register');
     }
   };
-  
-  return (
-    <div className="min-h-screen bg-white">
+  return <div className="min-h-screen bg-white">
       {/* Navigation */}
       <header className="bg-white shadow">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -96,30 +105,16 @@ const Home = () => {
           </nav>
           
           <div className="flex space-x-4">
-            {isAuthenticated ? (
-              <Button 
-                className="bg-medical-blue hover:bg-medical-darkblue" 
-                onClick={() => navigate(`/${user?.role}`)}
-              >
+            {isAuthenticated ? <Button className="bg-medical-blue hover:bg-medical-darkblue" onClick={() => navigate(`/${user?.role}`)}>
                 Dashboard
-              </Button>
-            ) : (
-              <>
-                <Button 
-                  variant="outline" 
-                  className="border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white"
-                  onClick={() => navigate('/login')}
-                >
+              </Button> : <>
+                <Button variant="outline" className="border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white" onClick={() => navigate('/login')}>
                   Log In
                 </Button>
-                <Button 
-                  className="bg-medical-blue hover:bg-medical-darkblue"
-                  onClick={() => navigate('/register')}
-                >
+                <Button className="bg-medical-blue hover:bg-medical-darkblue" onClick={() => navigate('/register')}>
                   Register
                 </Button>
-              </>
-            )}
+              </>}
           </div>
         </div>
       </header>
@@ -136,17 +131,10 @@ const Home = () => {
               Find specialists in your area and book your free appointment online. {/* Changed Description */}
             </p>
             <div className="mt-8 space-x-4">
-              <Button 
-                className="bg-medical-blue hover:bg-medical-darkblue px-8 py-6 text-lg"
-                onClick={handleGetStarted}
-              >
+              <Button className="bg-medical-blue hover:bg-medical-darkblue px-8 py-6 text-lg" onClick={handleGetStarted}>
                 Get Started
               </Button>
-              <Button 
-                variant="outline" 
-                className="border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white px-8 py-6 text-lg"
-                onClick={() => navigate('/find-doctor')}
-              >
+              <Button variant="outline" className="border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white px-8 py-6 text-lg" onClick={() => navigate('/find-doctor')}>
                 Find Doctors
               </Button>
             </div>
@@ -169,11 +157,7 @@ const Home = () => {
           
           <div className="relative"> {/* Removed pop-up elements around the image */}
             <div className="bg-medical-blue/5 rounded-3xl p-8 relative z-10">
-              <img 
-                src="https://randomuser.me/api/portraits/men/32.jpg" 
-                alt="Doctor with patient" 
-                className="w-full h-auto rounded-2xl shadow-lg"
-              />
+              <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Doctor with patient" className="w-full h-auto rounded-2xl shadow-lg" />
             </div>
           </div>
         </div>
@@ -190,8 +174,7 @@ const Home = () => {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            {specialties.map(specialty => (
-              <Card key={specialty.id} className="hover:shadow-md transition-shadow">
+            {specialties.map(specialty => <Card key={specialty.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-6 flex items-center justify-start"> {/* Changed justify-between to justify-start */}
                   <div className="flex items-center">
                     <div className="text-4xl mr-4">{specialty.icon}</div>
@@ -202,8 +185,7 @@ const Home = () => {
                   </div>
                   {/* Removed ArrowRight button */}
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
           
           <div className="text-center mt-10">
@@ -270,23 +252,11 @@ const Home = () => {
           
           <div className="max-w-4xl mx-auto">
             <div className="relative h-80">
-              {testimonials.map((testimonial, idx) => (
-                <div 
-                  key={testimonial.id}
-                  className={`absolute w-full transition-all duration-500 transform ${
-                    idx === activeTestimonial 
-                      ? "opacity-100 translate-x-0" 
-                      : "opacity-0 translate-x-full"
-                  }`}
-                >
+              {testimonials.map((testimonial, idx) => <div key={testimonial.id} className={`absolute w-full transition-all duration-500 transform ${idx === activeTestimonial ? "opacity-100 translate-x-0" : "opacity-0 translate-x-full"}`}>
                   <Card className="p-8 shadow-md">
                     <CardContent className="p-0">
                       <div className="flex items-center mb-6">
-                        <img 
-                          src={testimonial.avatar} 
-                          alt={testimonial.author} 
-                          className="w-14 h-14 rounded-full object-cover"
-                        />
+                        <img src={testimonial.avatar} alt={testimonial.author} className="w-14 h-14 rounded-full object-cover" />
                         <div className="ml-4">
                           <h4 className="font-semibold text-gray-800">{testimonial.author}</h4>
                           <p className="text-sm text-gray-500">{testimonial.role}</p>
@@ -296,36 +266,17 @@ const Home = () => {
                       <p className="text-gray-700 text-lg italic">"{testimonial.text}"</p>
                       
                       <div className="flex mt-6">
-                        {[1, 2, 3, 4, 5].map(star => (
-                          <svg 
-                            key={star} 
-                            xmlns="http://www.w3.org/2000/svg" 
-                            className="h-5 w-5 text-yellow-400" 
-                            viewBox="0 0 20 20" 
-                            fill="currentColor"
-                          >
+                        {[1, 2, 3, 4, 5].map(star => <svg key={star} xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                        ))}
+                          </svg>)}
                       </div>
                     </CardContent>
                   </Card>
-                </div>
-              ))}
+                </div>)}
             </div>
             
             <div className="flex justify-center mt-6 space-x-2">
-              {testimonials.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setActiveTestimonial(idx)}
-                  className={`w-3 h-3 rounded-full transition-colors ${
-                    idx === activeTestimonial 
-                      ? "bg-medical-blue" 
-                      : "bg-gray-300"
-                  }`}
-                ></button>
-              ))}
+              {testimonials.map((_, idx) => <button key={idx} onClick={() => setActiveTestimonial(idx)} className={`w-3 h-3 rounded-full transition-colors ${idx === activeTestimonial ? "bg-medical-blue" : "bg-gray-300"}`}></button>)}
             </div>
           </div>
         </div>
@@ -336,23 +287,12 @@ const Home = () => {
       {/* Footer */}
       <footer className="bg-gray-800 text-gray-300">
         <div className="container mx-auto px-4 py-12 text-center">
-          <p className="text-xl mb-6 max-w-3xl mx-auto">
-            Ready to Transform Your Healthcare Experience? Join thousands of patients and doctors who are already using OnlineDoc to simplify healthcare management.
-          </p>
-          <div className="space-x-4 mb-8">
-            <Button 
-              className="bg-white text-medical-blue hover:bg-gray-100 px-6 py-3 text-md"
-              onClick={handleGetStarted}
-            >
-              Get Started Now
-            </Button>
-            <Button 
-              variant="outline" 
-              className="border-white text-white hover:bg-white/20 px-6 py-3 text-md"
-              // onClick={() => { /* Define contact action or link */ }}
-            >
-              Contact Support
-            </Button>
+          <p className="text-xl mb-6 max-w-3xl mx-auto"></p>
+          <div className="">
+            <Button className="bg-white text-medical-blue hover:bg-gray-100 px-6 py-3 text-md" onClick={handleGetStarted}></Button>
+            <Button variant="outline" className="border-white text-white hover:bg-white/20 px-6 py-3 text-md"
+          // onClick={() => { /* Define contact action or link */ }}
+          ></Button>
           </div>
           <div className="border-t border-gray-700 pt-8">
             <p className="mb-4">&copy; {new Date().getFullYear()} OnlineDoc. All rights reserved.</p>
@@ -364,8 +304,6 @@ const Home = () => {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Home;
