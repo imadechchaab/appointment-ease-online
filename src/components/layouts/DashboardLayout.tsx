@@ -11,8 +11,8 @@ import {
   Menu, 
   Users, 
   Activity, 
-  FileText, // Keep for Admin role if needed, or remove if truly unused
-  Home as HomeIcon, // Renamed to avoid conflict
+  FileText, 
+  Home as HomeIcon, 
   Plus
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
@@ -45,7 +45,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     navigate('/login');
   };
   
-  const getInitials = (name: string = "User") => { // Added default for name
+  const getInitials = (name: string = "User") => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
@@ -53,17 +53,15 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navigationItems = {
     patient: [
       { name: 'Dashboard', icon: HomeIcon, path: '/patient' },
-      { name: 'Find Doctors', icon: Search, path: '/find-doctor' }, // Stays, global find
+      { name: 'Find Doctors', icon: Search, path: '/find-doctor' },
       { name: 'My Appointments', icon: Calendar, path: '/patient/appointments' },
-      // { name: 'Medical Records', icon: FileText, path: '/patient/records' }, // Removed
-      { name: 'Profile', icon: User, path: '/patient/profile' }, // Added
+      { name: 'Profile', icon: User, path: '/patient/profile' },
     ],
     doctor: [
       { name: 'Dashboard', icon: HomeIcon, path: '/doctor' },
       { name: 'Appointments', icon: Calendar, path: '/doctor/appointments' },
       { name: 'Patients', icon: Users, path: '/doctor/patients' },
-      // { name: 'Medical Records', icon: FileText, path: '/doctor/records' }, // Removed
-      { name: 'Profile', icon: User, path: '/doctor/profile' }, // Replaced Medical Records
+      { name: 'Profile', icon: User, path: '/doctor/profile' },
     ],
     admin: [
       { name: 'Dashboard', icon: HomeIcon, path: '/admin' },
@@ -76,32 +74,34 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   // Get navigation items based on user role
   const navItems = user?.role ? navigationItems[user.role as keyof typeof navigationItems] : [];
 
-
   // Determine current page title based on nav items
-  const currentPage = navItems.find(item => location.pathname === item.path || location.pathname.startsWith(item.path + (item.path === '/' ? '' : '/')));
+  const currentPage = navItems.find(item => 
+    location.pathname === item.path || 
+    location.pathname.startsWith(item.path + (item.path === '/' ? '' : '/'))
+  );
+  
   let pageTitle = currentPage ? currentPage.name : "Dashboard";
   if (location.pathname.includes('/book-appointment')) pageTitle = 'Book Appointment';
   if (location.pathname.includes('/profile')) pageTitle = 'Profile Settings';
   if (user?.name && !currentPage) pageTitle = `Welcome, ${user.name}`;
-
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
       <aside 
         className={cn(
-          "bg-white shadow-md transition-all duration-300 flex flex-col fixed h-full z-20", // Increased z-index
+          "bg-white shadow-md transition-all duration-300 flex flex-col fixed h-full z-20",
           sidebarOpen ? "w-64" : "w-20"
         )}
       >
         {/* Sidebar Header */}
-        <div className="p-4 border-b flex items-center h-16"> {/* Fixed height for header */}
+        <div className="p-4 border-b flex items-center h-16">
           <Link to="/" className="flex items-center flex-shrink-0">
             <div className="bg-medical-blue text-white p-2 rounded-md">
               <Activity size={20} />
             </div>
             {sidebarOpen && (
-              <span className="text-xl font-bold ml-2 text-gray-800 truncate">OnlineDoc</span> {/* Changed from MediBook, added truncate */}
+              <span className="text-xl font-bold ml-2 text-gray-800 truncate">OnlineDoc</span>
             )}
           </Link>
           <Button 
@@ -110,7 +110,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             onClick={toggleSidebar} 
             className={cn(
               "rounded-full hover:bg-gray-100 ml-auto",
-              !sidebarOpen && "mx-auto" // Center toggle button when sidebar is collapsed
+              !sidebarOpen && "mx-auto"
             )}
             aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
           >
@@ -131,7 +131,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                       ? "bg-medical-blue/10 text-medical-blue font-medium" 
                       : "hover:bg-gray-100"
                   )}
-                  title={item.name} // Tooltip for collapsed sidebar
+                  title={item.name}
                 >
                   <item.icon 
                     size={20} 
@@ -153,18 +153,18 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           {user && (
             <div className="flex items-center">
               <Avatar className="flex-shrink-0">
-                <AvatarImage src={user.profileImage || undefined} /> {/* Ensure undefined if no image */}
+                <AvatarImage src={user.profileImage || undefined} />
                 <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
               </Avatar>
               
               {sidebarOpen && (
-                <div className="ml-3 overflow-hidden"> {/* Added overflow-hidden */}
+                <div className="ml-3 overflow-hidden">
                   <p className="text-sm font-medium text-gray-800 truncate">{user.name}</p>
                   <p className="text-xs text-gray-500 capitalize truncate">{user.role}</p>
                 </div>
               )}
               
-              <div className={cn("ml-auto", !sidebarOpen && "hidden")}> {/* Hide dropdown trigger when collapsed, or handle differently */}
+              <div className={cn("ml-auto", !sidebarOpen && "hidden")}>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="rounded-full flex-shrink-0" aria-label="User settings">
@@ -186,7 +186,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               </div>
             </div>
           )}
-           {!user && sidebarOpen && ( // Show login if no user and sidebar is open
+          {!user && sidebarOpen && (
             <Button onClick={() => navigate('/login')} className="w-full">Login</Button>
           )}
         </div>
@@ -200,7 +200,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         )}
       >
         {/* Main content header */}
-        <div className="bg-white shadow-sm p-4 flex items-center justify-between h-16 sticky top-0 z-10"> {/* Fixed height, sticky */}
+        <div className="bg-white shadow-sm p-4 flex items-center justify-between h-16 sticky top-0 z-10">
           <h1 className="text-xl font-semibold text-gray-800 truncate">
             {pageTitle}
           </h1>
