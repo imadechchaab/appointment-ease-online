@@ -18,6 +18,11 @@ import BookAppointment from "./pages/BookAppointment";
 import FindDoctor from "./pages/FindDoctor";
 import ProfileSettings from "./pages/ProfileSettings";
 
+// New placeholder pages
+import PatientAppointments from "./pages/PatientAppointments"; 
+import DoctorAppointments from "./pages/DoctorAppointments";
+import DoctorPatients from "./pages/DoctorPatients";
+
 // Layouts
 import DashboardLayout from "./components/layouts/DashboardLayout";
 
@@ -55,6 +60,14 @@ const App = () => (
                 </DashboardLayout>
               </PrivateRoute>
             } />
+            <Route path="/patient/appointments" element={ // New Route
+              <PrivateRoute allowedRoles={['patient']}>
+                <DashboardLayout>
+                  <PatientAppointments />
+                </DashboardLayout>
+              </PrivateRoute>
+            } />
+            {/* Route for /patient/records removed as feature is removed from UI */}
             <Route path="/patient/profile" element={
               <PrivateRoute allowedRoles={['patient']}>
                 <DashboardLayout>
@@ -71,6 +84,21 @@ const App = () => (
                 </DashboardLayout>
               </PrivateRoute>
             } />
+            <Route path="/doctor/appointments" element={ // New Route
+              <PrivateRoute allowedRoles={['doctor']}>
+                <DashboardLayout>
+                  <DoctorAppointments />
+                </DashboardLayout>
+              </PrivateRoute>
+            } />
+            <Route path="/doctor/patients" element={ // New Route
+              <PrivateRoute allowedRoles={['doctor']}>
+                <DashboardLayout>
+                  <DoctorPatients />
+                </DashboardLayout>
+              </PrivateRoute>
+            } />
+            {/* Route for /doctor/records removed as feature is removed from UI */}
             <Route path="/doctor/profile" element={
               <PrivateRoute allowedRoles={['doctor']}>
                 <DashboardLayout>
@@ -87,6 +115,7 @@ const App = () => (
                 </DashboardLayout>
               </PrivateRoute>
             } />
+            {/* Add specific admin sub-routes here if needed, e.g., /admin/users */}
             
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />

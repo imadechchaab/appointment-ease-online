@@ -1,5 +1,4 @@
-
-import { Calendar, Clock, FileText, AlertCircle, CheckCircle, X } from 'lucide-react';
+import { Calendar, Clock, AlertCircle, CheckCircle, X, FileText as FileTextIcon } from 'lucide-react'; // Renamed FileText to FileTextIcon to avoid conflict
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from '@/context/AuthContext';
@@ -31,30 +30,8 @@ const upcomingAppointments = [
   }
 ];
 
-// Mock medical records data
-const recentMedicalRecords = [
-  {
-    id: "1",
-    title: "Blood Test Results",
-    date: "2025-05-01",
-    doctor: "Dr. Sarah Johnson",
-    type: "Lab Report"
-  },
-  {
-    id: "2",
-    title: "Annual Physical Checkup",
-    date: "2025-04-15",
-    doctor: "Dr. James Wilson",
-    type: "Examination"
-  },
-  {
-    id: "3",
-    title: "Prescription Renewal",
-    date: "2025-04-22",
-    doctor: "Dr. Sarah Johnson",
-    type: "Prescription"
-  }
-];
+// Mock medical records data - kept for stats card if needed elsewhere, but section removed.
+// const recentMedicalRecords = [ ... ]; // This data is no longer used directly on this page.
 
 const PatientDashboard = () => {
   const { user } = useAuth();
@@ -88,7 +65,7 @@ const PatientDashboard = () => {
       </Card>
       
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> {/* Changed to 2 columns */}
         <Card>
           <CardContent className="p-6 flex items-center">
             <div className="bg-medical-blue/10 p-4 rounded-full">
@@ -101,26 +78,16 @@ const PatientDashboard = () => {
           </CardContent>
         </Card>
         
-        <Card>
-          <CardContent className="p-6 flex items-center">
-            <div className="bg-green-100 p-4 rounded-full">
-              <FileText className="text-green-600 w-8 h-8" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm text-gray-500">Medical Records</p>
-              <h3 className="text-2xl font-bold">{recentMedicalRecords.length}</h3>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Medical Records Stat Card Removed */}
         
         <Card>
           <CardContent className="p-6 flex items-center">
-            <div className="bg-blue-100 p-4 rounded-full">
+            <div className="bg-blue-100 p-4 rounded-full"> {/* Was green-100, changed for variety as only 2 cards now */}
               <Clock className="text-blue-600 w-8 h-8" />
             </div>
             <div className="ml-4">
-              <p className="text-sm text-gray-500">Consultations</p>
-              <h3 className="text-2xl font-bold">12</h3>
+              <p className="text-sm text-gray-500">Past Consultations</p> {/* Changed from Consultations to Past Consultations for clarity */}
+              <h3 className="text-2xl font-bold">12</h3> {/* Mock data */}
             </div>
           </CardContent>
         </Card>
@@ -133,7 +100,7 @@ const PatientDashboard = () => {
           <Button 
             variant="outline" 
             className="text-sm"
-            onClick={() => navigate('/patient/appointments')}
+            onClick={() => navigate('/patient/appointments')} // This should navigate to the new PatientAppointments page
           >
             View All
           </Button>
@@ -208,74 +175,9 @@ const PatientDashboard = () => {
         )}
       </div>
       
-      {/* Recent Medical Records */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-800">Recent Medical Records</h2>
-          <Button 
-            variant="outline" 
-            className="text-sm"
-            onClick={() => navigate('/patient/records')}
-          >
-            View All
-          </Button>
-        </div>
-        
-        <Card>
-          <div className="divide-y">
-            {recentMedicalRecords.map((record) => (
-              <div key={record.id} className="p-4 flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="bg-gray-100 p-2 rounded-lg">
-                    <FileText className="w-6 h-6 text-gray-600" />
-                  </div>
-                  <div className="ml-3">
-                    <h4 className="font-medium text-gray-800">{record.title}</h4>
-                    <p className="text-sm text-gray-500">
-                      {record.doctor} • {formatDate(record.date)}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <span className="bg-gray-100 text-gray-600 text-xs py-1 px-2 rounded-full">
-                    {record.type}
-                  </span>
-                  <Button size="sm" variant="outline">View</Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </div>
+      {/* Recent Medical Records Section Removed */}
       
-      {/* Health Tips */}
-      <div>
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Health Tips & Reminders</h2>
-        
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <AlertCircle className="h-5 w-5 text-blue-500" />
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-blue-600">Annual checkup reminder</h3>
-              <div className="mt-1 text-sm text-blue-500">
-                <p>It's time for your annual physical checkup. Schedule an appointment soon.</p>
-              </div>
-              <div className="mt-2">
-                <Button 
-                  size="sm"
-                  className="bg-blue-500 hover:bg-blue-600"
-                  onClick={() => navigate('/patient/book-appointment')}
-                >
-                  Schedule Now
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Health Tips Section Removed */}
     </div>
   );
 };

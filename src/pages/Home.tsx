@@ -8,29 +8,30 @@ import {
   Search, 
   FileText, 
   Clock, 
-  Award,
-  Phone,
+  Award, // This icon was used for a removed element, but import might be kept by linter
+  Phone, // This icon was used for a removed element
   CheckCircle,
-  ArrowRight,
-  Users
+  ArrowRight, // This icon usage is being removed from specialties
+  Users, // This icon was used for a removed element
+  Activity // Using Activity for the logo now
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 // Mock data for specialties
 const specialties = [
-  { id: 1, name: "Cardiology", icon: "❤️", doctors: 12 },
-  { id: 2, name: "Neurology", icon: "🧠", doctors: 8 },
-  { id: 3, name: "Pediatrics", icon: "👶", doctors: 15 },
-  { id: 4, name: "Dermatology", icon: "🧬", doctors: 9 },
-  { id: 5, name: "Orthopedics", icon: "🦴", doctors: 14 },
-  { id: 6, name: "Psychiatry", icon: "🧘", doctors: 7 },
+  { id: 1, name: "Cardiology", icon: "❤️" },
+  { id: 2, name: "Neurology", icon: "🧠" },
+  { id: 3, name: "Pediatrics", icon: "👶" },
+  { id: 4, name: "Dermatology", icon: "🧬" },
+  { id: 5, name: "Orthopedics", icon: "🦴" },
+  { id: 6, name: "Psychiatry", icon: "🧘" },
 ];
 
 // Mock data for testimonials
 const testimonials = [
   {
     id: 1,
-    text: "MediBook made it so easy to find a specialist and book an appointment. Saved me hours of phone calls!",
+    text: "OnlineDoc made it so easy to find a specialist and book an appointment. Saved me hours of phone calls!",
     author: "Sarah Johnson",
     role: "Patient",
     avatar: "https://randomuser.me/api/portraits/women/12.jpg"
@@ -81,9 +82,9 @@ const Home = () => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center">
             <div className="bg-medical-blue text-white p-2 rounded-md">
-              <Calendar size={20} />
+              <Activity size={20} /> {/* Changed from Calendar to Activity */}
             </div>
-            <span className="text-xl font-bold ml-2 text-gray-800">MediBook</span>
+            <span className="text-xl font-bold ml-2 text-gray-800">OnlineDoc</span> {/* Changed from MediBook */}
           </Link>
           
           <nav>
@@ -128,12 +129,11 @@ const Home = () => {
         <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold text-gray-800 leading-tight">
-              Quality Healthcare<br />
-              <span className="text-medical-blue">At Your Fingertips</span>
+              Trusted Doctors<br /> {/* Changed Tagline */}
+              <span className="text-medical-blue">Anytime, Anywhere</span>
             </h1>
             <p className="mt-6 text-lg text-gray-600 leading-relaxed">
-              Book appointments with top doctors, manage your medical records,
-              and take control of your healthcare journey - all in one place.
+              Find specialists in your area and book your free appointment online. {/* Changed Description */}
             </p>
             <div className="mt-8 space-x-4">
               <Button 
@@ -167,37 +167,13 @@ const Home = () => {
             </div>
           </div>
           
-          <div className="relative">
+          <div className="relative"> {/* Removed pop-up elements around the image */}
             <div className="bg-medical-blue/5 rounded-3xl p-8 relative z-10">
               <img 
                 src="https://randomuser.me/api/portraits/men/32.jpg" 
                 alt="Doctor with patient" 
                 className="w-full h-auto rounded-2xl shadow-lg"
               />
-            </div>
-            
-            <div className="absolute -bottom-6 -left-6 bg-white p-4 rounded-xl shadow-lg z-20">
-              <div className="flex items-center">
-                <div className="bg-medical-green/10 p-3 rounded-full">
-                  <Users className="text-medical-green" size={24} />
-                </div>
-                <div className="ml-3">
-                  <p className="text-gray-700 font-medium">Trusted by</p>
-                  <p className="text-medical-blue font-bold text-xl">10,000+ Patients</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="absolute -top-6 -right-6 bg-white p-4 rounded-xl shadow-lg z-20">
-              <div className="flex items-center">
-                <div className="bg-medical-blue/10 p-3 rounded-full">
-                  <Award className="text-medical-blue" size={24} />
-                </div>
-                <div className="ml-3">
-                  <p className="text-gray-700 font-medium">Top Rated</p>
-                  <p className="text-medical-blue font-bold text-xl">500+ Specialists</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -216,31 +192,22 @@ const Home = () => {
           <div className="grid md:grid-cols-3 gap-8">
             {specialties.map(specialty => (
               <Card key={specialty.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-6 flex items-center justify-between">
+                <CardContent className="p-6 flex items-center justify-start"> {/* Changed justify-between to justify-start */}
                   <div className="flex items-center">
                     <div className="text-4xl mr-4">{specialty.icon}</div>
                     <div>
                       <h3 className="font-semibold text-lg text-gray-800">{specialty.name}</h3>
-                      <p className="text-sm text-gray-500">{specialty.doctors} Specialists</p>
+                      {/* <p className="text-sm text-gray-500">{specialty.doctors} Specialists</p> Removed doctors count */}
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon">
-                    <ArrowRight size={18} />
-                  </Button>
+                  {/* Removed ArrowRight button */}
                 </CardContent>
               </Card>
             ))}
           </div>
           
           <div className="text-center mt-10">
-            <Button 
-              variant="outline" 
-              className="border-medical-blue text-medical-blue hover:bg-medical-blue hover:text-white"
-              onClick={() => navigate('/find-doctor')}
-            >
-              View All Specialties
-              <ArrowRight className="ml-2" size={16} />
-            </Button>
+            <p className="text-gray-600">and more...</p> {/* Changed from Button to plain text */}
           </div>
         </div>
       </section>
@@ -251,11 +218,11 @@ const Home = () => {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-800">How It Works</h2>
             <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
-              Booking an appointment with MediBook is easy and convenient. Follow these simple steps to get started.
+              Booking an appointment with OnlineDoc is easy and convenient. Follow these simple steps to get started.
             </p>
           </div>
           
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-3 gap-8"> {/* Changed from md:grid-cols-4 to md:grid-cols-3 */}
             <div className="text-center p-6">
               <div className="bg-medical-blue/10 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4">
                 <Search className="text-medical-blue" size={24} />
@@ -286,15 +253,7 @@ const Home = () => {
               </p>
             </div>
             
-            <div className="text-center p-6">
-              <div className="bg-medical-blue/10 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4">
-                <FileText className="text-medical-blue" size={24} />
-              </div>
-              <h3 className="font-semibold text-lg text-gray-800 mb-2">Medical Records</h3>
-              <p className="text-gray-600">
-                Access your medical records and prescriptions anytime, anywhere.
-              </p>
-            </div>
+            {/* Removed Medical Records step */}
           </div>
         </div>
       </section>
@@ -305,7 +264,7 @@ const Home = () => {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-800">What Our Users Say</h2>
             <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
-              Discover how MediBook is changing the healthcare experience for patients and doctors.
+              Discover how OnlineDoc is changing the healthcare experience for patients and doctors.
             </p>
           </div>
           
@@ -372,84 +331,35 @@ const Home = () => {
         </div>
       </section>
       
-      {/* CTA Section */}
-      <section className="py-16 bg-medical-blue text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-6">Ready to Transform Your Healthcare Experience?</h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Join thousands of patients and doctors who are already using MediBook to simplify healthcare management.
+      {/* CTA Section Removed */}
+      
+      {/* Footer */}
+      <footer className="bg-gray-800 text-gray-300">
+        <div className="container mx-auto px-4 py-12 text-center">
+          <p className="text-xl mb-6 max-w-3xl mx-auto">
+            Ready to Transform Your Healthcare Experience? Join thousands of patients and doctors who are already using OnlineDoc to simplify healthcare management.
           </p>
-          <div className="space-x-4">
+          <div className="space-x-4 mb-8">
             <Button 
-              className="bg-white text-medical-blue hover:bg-gray-100 px-8 py-6 text-lg"
+              className="bg-white text-medical-blue hover:bg-gray-100 px-6 py-3 text-md"
               onClick={handleGetStarted}
             >
               Get Started Now
             </Button>
             <Button 
               variant="outline" 
-              className="border-white text-white hover:bg-white/20 px-8 py-6 text-lg"
+              className="border-white text-white hover:bg-white/20 px-6 py-3 text-md"
+              // onClick={() => { /* Define contact action or link */ }}
             >
-              <Phone size={18} className="mr-2" />
               Contact Support
             </Button>
           </div>
-        </div>
-      </section>
-      
-      {/* Footer */}
-      <footer className="bg-gray-800 text-gray-300">
-        <div className="container mx-auto px-4 py-12">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <Link to="/" className="flex items-center">
-                <div className="bg-white text-medical-blue p-2 rounded-md">
-                  <Calendar size={20} />
-                </div>
-                <span className="text-xl font-bold ml-2 text-white">MediBook</span>
-              </Link>
-              <p className="mt-4">
-                Making healthcare accessible, convenient, and efficient for everyone.
-              </p>
-            </div>
-            
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-              <ul className="space-y-2">
-                <li><Link to="/" className="hover:text-white transition-colors">Home</Link></li>
-                <li><Link to="/find-doctor" className="hover:text-white transition-colors">Find Doctors</Link></li>
-                <li><Link to="/login" className="hover:text-white transition-colors">Login</Link></li>
-                <li><Link to="/register" className="hover:text-white transition-colors">Register</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="text-lg font-semibold mb-4">For Patients</h3>
-              <ul className="space-y-2">
-                <li><a href="#" className="hover:text-white transition-colors">Search for Doctors</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Book Appointment</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Medical Records</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Patient Support</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="text-lg font-semibold mb-4">For Doctors</h3>
-              <ul className="space-y-2">
-                <li><a href="#" className="hover:text-white transition-colors">Join as a Doctor</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Manage Practice</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Doctor's Resources</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Doctor Support</a></li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="border-t border-gray-700 mt-12 pt-6 flex flex-col md:flex-row justify-between items-center">
-            <p>&copy; {new Date().getFullYear()} MediBook. All rights reserved.</p>
-            <div className="flex space-x-4 mt-4 md:mt-0">
-              <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-              <a href="#" className="hover:text-white transition-colors">Contact Us</a>
+          <div className="border-t border-gray-700 pt-8">
+            <p className="mb-4">&copy; {new Date().getFullYear()} OnlineDoc. All rights reserved.</p>
+            <div className="flex justify-center space-x-6">
+              <Link to="/privacy-policy" className="hover:text-white transition-colors text-sm">Privacy Policy</Link>
+              <Link to="/terms-of-service" className="hover:text-white transition-colors text-sm">Terms of Service</Link>
+              <Link to="/contact-us" className="hover:text-white transition-colors text-sm">Contact Us</Link>
             </div>
           </div>
         </div>
