@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,16 +18,24 @@ import BookAppointment from "./pages/BookAppointment";
 import FindDoctor from "./pages/FindDoctor";
 import ProfileSettings from "./pages/ProfileSettings";
 
-// New placeholder pages
+// Patient pages
 import PatientAppointments from "./pages/PatientAppointments"; 
+
+// Doctor pages
 import DoctorAppointments from "./pages/DoctorAppointments";
 import DoctorPatients from "./pages/DoctorPatients";
 
-// New placeholder page imports
+// Appointment & Patient detail pages
 import AppointmentDetailsPage from "./pages/AppointmentDetailsPage";
 import RescheduleAppointmentPage from "./pages/RescheduleAppointmentPage";
 import AddPatientPage from "./pages/AddPatientPage";
 import ViewPatientProfilePage from "./pages/ViewPatientProfilePage";
+
+// Admin pages
+import AdminUsers from "./pages/AdminUsers";
+import AdminDoctorApprovals from "./pages/AdminDoctorApprovals";
+import AdminAnalytics from "./pages/AdminAnalytics";
+import AdminProfile from "./pages/AdminProfile";
 
 // Layouts
 import DashboardLayout from "./components/layouts/DashboardLayout";
@@ -72,7 +81,6 @@ const App = () => (
                 </DashboardLayout>
               </PrivateRoute>
             } />
-            {/* Route for /patient/records removed as feature is removed from UI */}
             <Route path="/patient/appointments/:appointmentId/reschedule" element={
               <PrivateRoute allowedRoles={['patient']}>
                 <DashboardLayout>
@@ -138,7 +146,6 @@ const App = () => (
                 </DashboardLayout>
               </PrivateRoute>
             } />
-            {/* Route for /doctor/records removed as feature is removed from UI */}
             <Route path="/doctor/profile" element={
               <PrivateRoute allowedRoles={['doctor']}>
                 <DashboardLayout>
@@ -155,7 +162,34 @@ const App = () => (
                 </DashboardLayout>
               </PrivateRoute>
             } />
-            {/* Add specific admin sub-routes here if needed, e.g., /admin/users */}
+            <Route path="/admin/users" element={
+              <PrivateRoute allowedRoles={['admin']}>
+                <DashboardLayout>
+                  <AdminUsers />
+                </DashboardLayout>
+              </PrivateRoute>
+            } />
+            <Route path="/admin/approvals" element={
+              <PrivateRoute allowedRoles={['admin']}>
+                <DashboardLayout>
+                  <AdminDoctorApprovals />
+                </DashboardLayout>
+              </PrivateRoute>
+            } />
+            <Route path="/admin/analytics" element={
+              <PrivateRoute allowedRoles={['admin']}>
+                <DashboardLayout>
+                  <AdminAnalytics />
+                </DashboardLayout>
+              </PrivateRoute>
+            } />
+            <Route path="/admin/profile" element={
+              <PrivateRoute allowedRoles={['admin']}>
+                <DashboardLayout>
+                  <AdminProfile />
+                </DashboardLayout>
+              </PrivateRoute>
+            } />
             
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />

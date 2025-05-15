@@ -68,6 +68,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       { name: 'Manage Users', icon: Users, path: '/admin/users' },
       { name: 'Doctor Approvals', icon: FileText, path: '/admin/approvals' },
       { name: 'System Analytics', icon: Activity, path: '/admin/analytics' },
+      { name: 'Profile', icon: User, path: '/admin/profile' },
     ],
   };
 

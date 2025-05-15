@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Activity, Eye, EyeOff } from 'lucide-react'; // Changed Calendar to Activity
+import { Activity, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -31,6 +31,7 @@ const Register = () => {
   const [role, setRole] = useState<'patient' | 'doctor'>('patient');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   
   const navigate = useNavigate();
@@ -159,16 +160,26 @@ const Register = () => {
       
       <div className="space-y-2">
         <Label htmlFor={`${role}-confirmPassword`}>Confirm Password</Label>
-        <Input 
-          id={`${role}-confirmPassword`} 
-          type="password" 
-          placeholder="••••••••" 
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          className={errors.confirmPassword ? 'border-red-500' : ''}
-          aria-invalid={!!errors.confirmPassword}
-          aria-describedby={errors.confirmPassword ? `${role}-confirmPassword-error` : undefined}
-        />
+        <div className="relative">
+          <Input 
+            id={`${role}-confirmPassword`} 
+            type={showConfirmPassword ? "text" : "password"} 
+            placeholder="••••••••" 
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className={errors.confirmPassword ? 'border-red-500' : ''}
+            aria-invalid={!!errors.confirmPassword}
+            aria-describedby={errors.confirmPassword ? `${role}-confirmPassword-error` : undefined}
+          />
+          <button 
+            type="button"
+            aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+          >
+            {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+        </div>
         {errors.confirmPassword && <p id={`${role}-confirmPassword-error`} className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
       </div>
 
@@ -195,9 +206,9 @@ const Register = () => {
       <div className="mb-8 flex items-center">
         <Link to="/" className="flex items-center">
           <div className="bg-medical-blue text-white p-2 rounded-md">
-            <Activity size={20} /> {/* Changed from Calendar */}
+            <Activity size={20} />
           </div>
-          <span className="text-2xl font-bold ml-2 text-gray-800">OnlineDoc</span> {/* Changed from MediBook */}
+          <span className="text-2xl font-bold ml-2 text-gray-800">OnlineDoc</span>
         </Link>
       </div>
       
@@ -212,9 +223,7 @@ const Register = () => {
         <CardContent>
           <Tabs defaultValue="patient" onValueChange={(value) => {
             setRole(value as 'patient' | 'doctor');
-            setErrors({}); // Clear errors on tab change
-            // Optionally clear form fields too
-            // setName(''); setEmail(''); setPassword(''); setConfirmPassword(''); setSpecializationId('');
+            setErrors({});
           }}>
             <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger value="patient">I'm a Patient</TabsTrigger>
@@ -222,18 +231,15 @@ const Register = () => {
             </TabsList>
             
             <form onSubmit={handleSubmit} className="space-y-4">
-              <TabsContent value="patient" className="mt-0 pt-0"> {/* Remove default TabsContent margin */}
+              <TabsContent value="patient" className="mt-0 pt-0">
                 {renderFormFields()}
               </TabsContent>
               
-              <TabsContent value="doctor" className="mt-0 pt-0"> {/* Remove default TabsContent margin */}
+              <TabsContent value="doctor" className="mt-0 pt-0">
                 {renderFormFields()}
               </TabsContent>
             </form>
           </Tabs>
-          
-          {/* Removed "Or continue with" and Google button */}
-          
         </CardContent>
         
         <CardFooter className="flex justify-center">
