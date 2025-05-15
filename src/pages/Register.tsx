@@ -9,12 +9,14 @@ import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from '@/context/AuthContext';
 import { Eye, EyeOff } from 'lucide-react';
 
+type UserRole = 'patient' | 'doctor' | 'admin';
+
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState('patient');
+  const [role, setRole] = useState<UserRole>('patient');
   const [passwordError, setPasswordError] = useState('');
   const {
     register: signUp
@@ -70,7 +72,12 @@ const Register = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
-              <select id="role" className="w-full p-2 border rounded-md shadow-sm focus:ring-2 focus:ring-medical-blue focus:border-medical-blue" value={role} onChange={e => setRole(e.target.value)}>
+              <select 
+                id="role" 
+                className="w-full p-2 border rounded-md shadow-sm focus:ring-2 focus:ring-medical-blue focus:border-medical-blue" 
+                value={role} 
+                onChange={e => setRole(e.target.value as UserRole)}
+              >
                 <option value="patient">Patient</option>
                 <option value="doctor">Doctor</option>
               </select>
