@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,7 @@ const Register = () => {
   const [role, setRole] = useState('patient');
   const [passwordError, setPasswordError] = useState('');
   const {
-    signUp
+    register: signUp
   } = useAuth();
   const navigate = useNavigate();
   const {
@@ -34,7 +35,7 @@ const Register = () => {
     }
     setPasswordError('');
     try {
-      await signUp(email, password, name, role);
+      await signUp(name, email, password, role);
       toast({
         title: "Registration Successful",
         description: "You have successfully registered. Redirecting...",
@@ -51,6 +52,7 @@ const Register = () => {
       });
     }
   };
+  
   return <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <Card className="w-full max-w-md p-4 space-y-4">
         <CardHeader>
