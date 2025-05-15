@@ -151,7 +151,8 @@ const FindDoctor = () => {
       alert('Please log in as a patient to book appointments');
     }
   };
-  return <div className="min-h-screen bg-gray-50">
+  return (
+    <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
       <header className="bg-white shadow">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -329,30 +330,27 @@ const FindDoctor = () => {
       </section>
       
       {/* Footer */}
-      <footer className="bg-gray-800 text-gray-300 py-8">
+      <footer className="bg-gray-100 border-t border-gray-200 text-gray-600 py-8">
         <div className="container mx-auto px-4">
-          <div className="text-center">
-            <Link to="/" className="inline-flex items-center">
-              <div className="bg-white text-medical-blue p-2 rounded-md">
-                <Calendar size={20} />
-              </div>
-              <span className="text-xl font-bold ml-2 text-white">MediBook</span>
-            </Link>
-            <p className="mt-2">
-              Making healthcare accessible, convenient, and efficient for everyone.
-            </p>
-          </div>
-          
-          <div className="border-t border-gray-700 mt-6 pt-6 flex flex-col md:flex-row justify-between items-center">
-            <p>&copy; {new Date().getFullYear()} MediBook. All rights reserved.</p>
-            <div className="flex space-x-4 mt-4 md:mt-0">
-              <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-              <a href="#" className="hover:text-white transition-colors">Contact Us</a>
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="text-center md:text-left mb-4 md:mb-0">
+              <Link to="/" className="flex items-center justify-center md:justify-start">
+                <div className="bg-medical-blue text-white p-2 rounded-md">
+                  <Calendar size={20} />
+                </div>
+                <span className="text-xl font-bold ml-2 text-gray-800">MediBook</span>
+              </Link>
             </div>
+            <div className="flex space-x-4 mb-4 md:mb-0">
+              <a href="#" className="hover:text-medical-blue transition-colors">Privacy Policy</a>
+              <a href="#" className="hover:text-medical-blue transition-colors">Terms of Service</a>
+              <a href="#" className="hover:text-medical-blue transition-colors">Contact Us</a>
+            </div>
+            <p className="text-sm text-center md:text-right">&copy; {new Date().getFullYear()} MediBook. All rights reserved.</p>
           </div>
         </div>
       </footer>
-    </div>;
+    </div>
+  );
 };
 export default FindDoctor;

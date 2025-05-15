@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from '@/components/ui/card';
-import { User, CheckCircle } from 'lucide-react';
+import { User, CheckCircle, Edit } from 'lucide-react'; // Added Edit icon
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 
@@ -15,11 +15,22 @@ const AdminUsers = () => {
   ];
 
   const handleUserAction = (userId: string, action: string) => {
-    toast({
-      title: `User ${action}`,
-      description: `User ID: ${userId} has been ${action.toLowerCase()}.`,
-      variant: action === 'Suspended' ? 'destructive' : 'default',
-    });
+    if (action === 'Edited') {
+      console.log(`Attempting to edit user with ID: ${userId}`);
+      toast({
+        title: `Edit User Initiated`,
+        description: `Preparing to edit details for User ID: ${userId}. (Full functionality pending)`,
+        variant: 'default',
+      });
+      // Here you would typically open a modal or navigate to an edit page
+      // For now, we just log and show a more specific toast.
+    } else {
+      toast({
+        title: `User ${action}`,
+        description: `User ID: ${userId} has been ${action.toLowerCase()}.`,
+        variant: action === 'Suspended' ? 'destructive' : 'default',
+      });
+    }
   };
 
   return (
@@ -64,6 +75,7 @@ const AdminUsers = () => {
                 </div>
                 <div className="flex space-x-2">
                   <Button size="sm" variant="outline" onClick={() => handleUserAction(user.id, 'Edited')}>
+                    <Edit size={14} className="mr-1" /> {/* Added Edit icon */}
                     Edit
                   </Button>
                   {user.status === 'Active' ? (

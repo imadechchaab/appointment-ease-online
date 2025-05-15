@@ -2,7 +2,6 @@ import { Users, UserCheck, AlertTriangle, BarChart, Calendar, Star, ChevronRight
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/context/AuthContext';
 import { useState } from 'react';
 
@@ -90,6 +89,7 @@ const recentAppointments = [{
   time: "2:15 PM",
   status: "ongoing"
 }];
+
 const AdminDashboard = () => {
   const {
     user
@@ -108,7 +108,9 @@ const AdminDashboard = () => {
 
   // Filter users based on search term
   const filteredUsers = searchTerm ? recentUsers.filter(user => user.name.toLowerCase().includes(searchTerm.toLowerCase()) || user.role.toLowerCase().includes(searchTerm.toLowerCase())) : recentUsers;
-  return <div className="space-y-8">
+  
+  return (
+    <div className="space-y-8">
       {/* Welcome Section */}
       <Card className="bg-gradient-to-r from-medical-blue/80 to-medical-darkblue text-white">
         <CardContent className="p-6">
@@ -232,196 +234,71 @@ const AdminDashboard = () => {
       </div>
       
       {/* System Users */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-800">System Users</h2>
-            <div className="relative w-64">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-              <Input placeholder="Search users..." className="pl-9" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-            </div>
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-gray-800">System Users</h2>
+          <div className="relative w-64">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+            <Input placeholder="Search users..." className="pl-9" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
           </div>
-          
-          <Card>
-            <div className="divide-y">
-              <div className="p-3 bg-gray-50 flex items-center text-sm font-medium text-gray-500">
-                <div className="w-12"></div>
-                <div className="ml-4 flex-1">User</div>
-                <div className="w-24 text-center">Role</div>
-                <div className="w-24 text-center hidden md:block">Joined</div>
-                <div className="w-24 text-center">Status</div>
-                <div className="w-16"></div>
-              </div>
-              
-              {filteredUsers.map(user => <div key={user.id} className="p-4 flex items-center">
-                  <img src={user.image} alt={user.name} className="w-12 h-12 rounded-full object-cover" />
-                  <div className="ml-4 flex-1">
-                    <h4 className="font-medium text-gray-800">{user.name}</h4>
-                    <p className="text-sm text-gray-500 hidden md:block">User #{user.id}</p>
-                  </div>
-                  
-                  <div className="w-24 text-center">
-                    <span className={`text-sm px-2 py-1 rounded-full ${user.role === 'Patient' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
-                      {user.role}
-                    </span>
-                  </div>
-                  
-                  <div className="w-24 text-center hidden md:block">
-                    <span className="text-sm text-gray-500">
-                      {formatDate(user.joinedOn)}
-                    </span>
-                  </div>
-                  
-                  <div className="w-24 text-center">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${user.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                      {user.status === 'active' ? <>
-                          <span className="w-1.5 h-1.5 rounded-full bg-green-600 mr-1"></span>
-                          Active
-                        </> : <>
-                          <span className="w-1.5 h-1.5 rounded-full bg-red-600 mr-1"></span>
-                          Blocked
-                        </>}
-                    </span>
-                  </div>
-                  
-                  <div className="w-16 text-right">
-                    <Button variant="ghost" size="sm">
-                      <ChevronRight size={18} />
-                    </Button>
-                  </div>
-                </div>)}
-            </div>
-            
-            <div className="p-4 border-t text-center">
-              <Button variant="outline" className="text-sm">
-                View All Users
-              </Button>
-            </div>
-          </Card>
         </div>
         
-        {/* System Analytics */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-800">System Analytics</h2>
-          </div>
-          
-          <Card className="mb-6">
-            <CardContent className="p-6">
-              <h3 className="font-medium text-gray-700 mb-4">Recent Activity</h3>
-              
-              <div className="space-y-4">
-                {recentAppointments.map(appointment => <div key={appointment.id} className="flex items-start">
-                    <div className={`p-2 rounded-full ${appointment.status === 'completed' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
-                      <Calendar size={16} />
-                    </div>
-                    <div className="ml-3">
-                      <p className="text-sm font-medium text-gray-800">
-                        {appointment.patient} had an appointment with {appointment.doctor}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {formatDate(appointment.date)} at {appointment.time} • 
-                        <span className={`ml-1 ${appointment.status === 'completed' ? 'text-green-600' : 'text-blue-600'}`}>
-                          {appointment.status === 'completed' ? 'Completed' : 'Ongoing'}
-                        </span>
-                      </p>
-                    </div>
-                  </div>)}
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="font-medium text-gray-700 mb-4">System Performance</h3>
-              
-              <div className="space-y-4">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-500">Server Load</span>
-                    <span className="font-medium">68%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-yellow-500 h-2 rounded-full" style={{
-                    width: '68%'
-                  }}></div>
-                  </div>
+        <Card>
+          <div className="divide-y">
+            <div className="p-3 bg-gray-50 flex items-center text-sm font-medium text-gray-500">
+              <div className="w-12"></div>
+              <div className="ml-4 flex-1">User</div>
+              <div className="w-24 text-center">Role</div>
+              <div className="w-24 text-center hidden md:block">Joined</div>
+              <div className="w-24 text-center">Status</div>
+              <div className="w-16"></div>
+            </div>
+            
+            {filteredUsers.map(user => <div key={user.id} className="p-4 flex items-center">
+                <img src={user.image} alt={user.name} className="w-12 h-12 rounded-full object-cover" />
+                <div className="ml-4 flex-1">
+                  <h4 className="font-medium text-gray-800">{user.name}</h4>
+                  <p className="text-sm text-gray-500 hidden md:block">User #{user.id}</p>
                 </div>
                 
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-500">Database Usage</span>
-                    <span className="font-medium">42%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-green-500 h-2 rounded-full" style={{
-                    width: '42%'
-                  }}></div>
-                  </div>
+                <div className="w-24 text-center">
+                  <span className={`text-sm px-2 py-1 rounded-full ${user.role === 'Patient' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
+                    {user.role}
+                  </span>
                 </div>
                 
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-500">API Response Time</span>
-                    <span className="font-medium">234ms</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-medical-blue h-2 rounded-full" style={{
-                    width: '30%'
-                  }}></div>
-                  </div>
+                <div className="w-24 text-center hidden md:block">
+                  <span className="text-sm text-gray-500">
+                    {formatDate(user.joinedOn)}
+                  </span>
                 </div>
                 
-                <div className="pt-4 mt-4 border-t">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-medium text-gray-700">Weekly Change</h3>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-                        <span className="text-sm">New Patients</span>
-                      </div>
-                      <div className="flex items-center">
-                        <span className="text-sm font-medium">+24</span>
-                        <span className="text-xs text-green-500 ml-1">(+12%)</span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-                        <span className="text-sm">New Doctors</span>
-                      </div>
-                      <div className="flex items-center">
-                        <span className="text-sm font-medium">+3</span>
-                        <span className="text-xs text-green-500 ml-1">(+5%)</span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <TrendingDown className="h-4 w-4 text-red-500 mr-1" />
-                        <span className="text-sm">Cancelled Appointments</span>
-                      </div>
-                      <div className="flex items-center">
-                        <span className="text-sm font-medium">-7</span>
-                        <span className="text-xs text-red-500 ml-1">(-3%)</span>
-                      </div>
-                    </div>
-                  </div>
+                <div className="w-24 text-center">
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${user.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                    {user.status === 'active' ? <>
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-600 mr-1"></span>
+                        Active
+                      </> : <>
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-600 mr-1"></span>
+                        Blocked
+                      </>}
+                  </span>
                 </div>
                 
-                <div className="pt-4">
-                  <Button className="w-full bg-medical-blue hover:bg-medical-darkblue">
-                    <BarChart size={16} className="mr-2" /> View Full Analytics
+                <div className="w-16 text-right">
+                  <Button variant="ghost" size="sm">
+                    <ChevronRight size={18} />
                   </Button>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </div>)}
+          </div>
+          
+          <div className="p-4 border-t text-center">
+            <Button variant="outline" className="text-sm">
+              View All Users
+            </Button>
+          </div>
+        </Card>
       </div>
       
       {/* System Alerts */}
@@ -449,6 +326,7 @@ const AdminDashboard = () => {
           </div>
         </CardContent>
       </Card>
-    </div>;
+    </div>
+  );
 };
 export default AdminDashboard;
