@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User as SupabaseUser, Subscription } from '@supabase/supabase-js';
@@ -31,6 +31,7 @@ interface AuthContextType {
   register: (name: string, email: string, password: string, role: UserRole, specialization?: string) => Promise<void>;
   logout: () => Promise<void>;
   hasRole: (roles: UserRole[]) => boolean;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>; // Added setUser
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,9 +41,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const [authSubscription, setAuthSubscription] = useState<Subscription | null>(null);
+  // No need for authSubscription state here, manage listener directly in useEffect
 
-  const fetchUserProfile = async (supabaseUser: SupabaseUser, role: UserRole): Promise<UserProfileData | null> => {
+  const fetchUserProfile = useCallback(async (supabaseUser: SupabaseUser, role: UserRole): Promise<UserProfileData | null> => {
     if (!supabaseUser) return null;
 
     let tableName: 'patients' | 'doctors' | 'admins' | '' = '';
@@ -54,7 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     console.log(`Fetching profile from ${tableName} for user ${supabaseUser.id} with role ${role}`);
 
     const { data, error } = await supabase
-      .from(tableName) // tableName is now correctly typed
+      .from(tableName) 
       .select('*')
       .eq('user_id', supabaseUser.id)
       .single();
@@ -78,19 +79,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     console.log(`Fetched profile data for ${role}:`, data);
     return data as UserProfileData;
-  };
+  }, [toast]); // Added toast to useCallback dependencies
 
   useEffect(() => {
     setLoading(true);
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      if (session?.user) {
-        const role = session.user.user_metadata?.role as UserRole;
+    supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      if (currentSession?.user) {
+        const role = currentSession.user.user_metadata?.role as UserRole;
         if (role) {
-          const profile = await fetchUserProfile(session.user, role);
-          setUser({ ...session.user, profile, appRole: role });
+          const profile = await fetchUserProfile(currentSession.user, role);
+          setUser({ ...currentSession.user, profile, appRole: role });
         } else {
-          setUser({ ...session.user, profile: null, appRole: null });
+          setUser({ ...currentSession.user, profile: null, appRole: null });
            console.warn("User role not found in metadata during initial session load.");
         }
       } else {
@@ -99,22 +100,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (_event, newSession) => {
         setLoading(true);
-        setSession(session);
-        if (session?.user) {
-          const role = session.user.user_metadata?.role as UserRole;
+        setSession(newSession);
+        if (newSession?.user) {
+          const role = newSession.user.user_metadata?.role as UserRole;
            console.log("Auth state changed. Event:", _event, "User metadata role:", role);
           if (role) {
             // Defer profile fetching slightly to avoid potential race conditions on fast auth changes
+            // Using setTimeout to ensure state updates from onAuthStateChange complete before fetching.
             setTimeout(async () => {
-              const profile = await fetchUserProfile(session.user, role);
-              setUser({ ...session.user, profile, appRole: role });
+              const profile = await fetchUserProfile(newSession.user, role);
+              setUser({ ...newSession.user, profile, appRole: role });
               setLoading(false);
             }, 0);
           } else {
-             setUser({ ...session.user, profile: null, appRole: null });
+             setUser({ ...newSession.user, profile: null, appRole: null });
              console.warn("User role not found in metadata during auth state change.");
              setLoading(false);
           }
@@ -125,12 +127,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    setAuthSubscription(listener.subscription); // Store the subscription
-
+    // The listener object itself contains the subscription.
+    // The subscription has an unsubscribe method.
     return () => {
-      authSubscription?.unsubscribe(); // Correctly unsubscribe
+      authListener?.subscription.unsubscribe(); // Correctly unsubscribe
     };
-  }, [authSubscription]); // Add authSubscription to dependency array
+  }, [fetchUserProfile]); // fetchUserProfile is now memoized with useCallback
 
 
   const login = async (email: string, password: string) => {
@@ -260,7 +262,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       login, 
       register, 
       logout, 
-      hasRole 
+      hasRole,
+      setUser // Provide setUser in context
     }}>
       {children}
     </AuthContext.Provider>

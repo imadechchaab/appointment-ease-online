@@ -1,17 +1,16 @@
-
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth, User } from '@/context/AuthContext';
+import { useAuth, User, UserProfileData } from '@/context/AuthContext'; // Import UserProfileData
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, User as UserIcon, Edit3 } from 'lucide-react'; // UserIcon to avoid conflict
+import { Camera, User as UserIcon } from 'lucide-react'; // UserIcon to avoid conflict
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/integrations/supabase/client'; // For file uploads
 
 const ProfileSettings = () => {
-  const { user, loading: authLoading, session, setUser } = useAuth(); // Added setUser
+  const { user, loading: authLoading, session, setUser } = useAuth(); // setUser is now available
   const { toast } = useToast();
   
   const [fullName, setFullName] = useState(user?.profile?.full_name || '');
@@ -27,7 +26,7 @@ const ProfileSettings = () => {
   useEffect(() => {
     if (user) {
       setFullName(user.profile?.full_name || '');
-      setEmail(user.email || '');
+      setEmail(user.email || ''); // Email from auth.user is more reliable
       setProfileImageUrl(user.profile?.profile_image_url || '');
       if (user.appRole === 'doctor') {
         setSpecialization(user.profile?.specialization || '');
@@ -60,7 +59,7 @@ const ProfileSettings = () => {
       const filePath = `profiles/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('profile-images') // Ensure this bucket exists and has correct policies
+        .from('profile-images') 
         .upload(filePath, profileImageFile, {
           cacheControl: '3600',
           upsert: true, 
@@ -77,7 +76,6 @@ const ProfileSettings = () => {
       uploadedImageUrl = urlData.publicUrl;
     }
     
-    // Determine table and data for update
     let tableName: 'patients' | 'doctors' | 'admins' | '' = '';
     if (user.appRole === 'patient') tableName = 'patients';
     else if (user.appRole === 'doctor') tableName = 'doctors';
@@ -88,10 +86,12 @@ const ProfileSettings = () => {
       return;
     }
 
-    const updates: { full_name: string; profile_image_url?: string; specialization?: string; updated_at: string } = {
+    // Use Partial to make all properties optional initially
+    const updates: Partial<UserProfileData & { updated_at: string }> = {
       full_name: fullName,
       updated_at: new Date().toISOString(),
     };
+
     if (uploadedImageUrl) {
       updates.profile_image_url = uploadedImageUrl;
     }
@@ -99,30 +99,39 @@ const ProfileSettings = () => {
       updates.specialization = specialization;
     }
     
-    const { data: updatedProfile, error: updateError } = await supabase
+    const { data: updatedProfileData, error: updateError } = await supabase
       .from(tableName)
-      .update(updates)
+      .update(updates) // Supabase types should handle this correctly
       .eq('user_id', user.id)
       .select()
       .single();
 
     if (updateError) {
       toast({ title: "Update Error", description: `Failed to update profile: ${updateError.message}`, variant: "destructive" });
-    } else if (updatedProfile) {
+    } else if (updatedProfileData) {
+      const updatedProfile = updatedProfileData as UserProfileData; // Cast to UserProfileData
       toast({ title: "Success", description: "Profile updated successfully!" });
-      // Update user context
-      setUser(prevUser => prevUser ? ({
-        ...prevUser,
-        profile: {
-            // Spread existing profile data and then override
-            ...(prevUser.profile || { id: '', user_id: user.id, full_name: '', email: user.email || '' }), // provide default structure if profile is null
-            full_name: updatedProfile.full_name,
-            profile_image_url: updatedProfile.profile_image_url,
-            ...(user.appRole === 'doctor' && { specialization: updatedProfile.specialization }),
+      
+      setUser(prevUser => {
+        if (!prevUser) return null;
+        
+        const newProfileData: UserProfileData = {
+          ...(prevUser.profile || { id: '', user_id: user.id, full_name: '', email: user.email || '' }), // Default structure
+          full_name: updatedProfile.full_name,
+          profile_image_url: updatedProfile.profile_image_url,
+        };
+
+        if (user.appRole === 'doctor' && 'specialization' in updatedProfile) {
+           newProfileData.specialization = updatedProfile.specialization;
         }
-      }) : null);
-      setProfileImageUrl(updatedProfile.profile_image_url || ''); // Update local state for image URL
-      setProfileImageFile(null); // Clear the file input after successful upload
+        
+        return {
+          ...prevUser,
+          profile: newProfileData
+        };
+      });
+      setProfileImageUrl(updatedProfile.profile_image_url || ''); 
+      setProfileImageFile(null); 
     }
     setIsUpdating(false);
   };
@@ -206,9 +215,6 @@ const ProfileSettings = () => {
               )}
             </div>
             
-            {/* Add more fields as necessary, e.g., password change */}
-            {/* For password change, you'd typically use supabase.auth.updateUser({ password: newPassword }) */}
-
             <CardFooter className="pt-6 flex justify-end px-0">
               <Button type="submit" className="bg-medical-blue hover:bg-medical-darkblue" disabled={isUploading || isUpdating || authLoading}>
                 {(isUploading || isUpdating) ? 'Saving...' : 'Save Changes'}
@@ -222,4 +228,3 @@ const ProfileSettings = () => {
 };
 
 export default ProfileSettings;
-
