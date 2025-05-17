@@ -1,12 +1,13 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from '@/context/AuthContext';
-import { Link, useNavigate } from 'react-router-dom'; // Corrected import
+import { Link, useNavigate } from 'react-router-dom';
 import { Users, FileText, Activity } from 'lucide-react';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
-  const navigate = useNavigate(); // This should now work
+  const navigate = useNavigate();
 
   const cardData = [
     {
@@ -55,16 +56,18 @@ const AdminDashboard = () => {
           </Card>
         ))}
       </div>
-       {/* Placeholder for more advanced analytics or quick actions */}
-       {/* <Card>
+      
+      {/* Placeholder for more advanced analytics or quick actions 
+      <Card>
         <CardHeader>
           <CardTitle>Quick Stats</CardTitle>
         </CardHeader>
         <CardContent>
-          <p>Total Users: {/* Fetch dynamically */}</p>
-          <p>Pending Approvals: {/* Fetch dynamically */}</p>
+          <p>Total Users: Loading...</p>
+          <p>Pending Approvals: Loading...</p>
         </CardContent>
-      </Card> */}
+      </Card>
+      */}
     </div>
   );
 };
