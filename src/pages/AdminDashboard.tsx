@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from '@/context/AuthContext';
-import { useState } from 'react';
+import { useState, useNavigate } from 'react';
 
 // Mock data for doctors pending approval
 const pendingDoctors = [{
@@ -94,6 +94,7 @@ const AdminDashboard = () => {
   const {
     user
   } = useAuth();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
 
   // Format date
@@ -110,19 +111,18 @@ const AdminDashboard = () => {
   const filteredUsers = searchTerm ? recentUsers.filter(user => user.name.toLowerCase().includes(searchTerm.toLowerCase()) || user.role.toLowerCase().includes(searchTerm.toLowerCase())) : recentUsers;
   
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-4 md:p-6">
       {/* Welcome Section */}
-      <Card className="bg-gradient-to-r from-medical-blue/80 to-medical-darkblue text-white">
+      <Card className="bg-gradient-to-r from-medical-blue/90 to-medical-darkblue text-white shadow-lg">
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold">Welcome, {user?.name}!</h2>
-              <p className="mt-2 text-white/80">MediBook Administrator Dashboard</p>
+              <h2 className="text-3xl font-bold">Admin Dashboard</h2>
+              <p className="mt-2 text-lg text-white/80">
+                Welcome, {user?.profile?.full_name || 'Admin'}! Manage the platform efficiently.
+              </p>
             </div>
-            
-            <Button className="mt-4 md:mt-0 bg-white text-medical-blue hover:bg-gray-100">
-              <Settings size={16} className="mr-2" /> System Settings
-            </Button>
+            {/* Optional: Add a relevant admin action button here if needed */}
           </div>
         </CardContent>
       </Card>
@@ -329,4 +329,5 @@ const AdminDashboard = () => {
     </div>
   );
 };
+
 export default AdminDashboard;

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { 
   Calendar, 
@@ -15,6 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 // Mock appointment data
 const mockAppointments = [
@@ -110,6 +110,7 @@ const recentPatients = [
 
 const DoctorDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('today');
   
   // Filter appointments based on tab
@@ -135,28 +136,32 @@ const DoctorDashboard = () => {
   };
   
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-4 md:p-6">
       {/* Welcome Section */}
-      <Card className="bg-gradient-to-r from-medical-blue/80 to-medical-darkblue text-white">
+      <Card className="bg-gradient-to-r from-medical-blue to-medical-darkblue text-white shadow-lg">
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold">Welcome, {user?.name}!</h2>
-              <p className="mt-2 text-white/80">
-                {user?.specialization} • Your practice dashboard for today.
+              <h2 className="text-3xl font-bold">Doctor's Dashboard</h2>
+              <p className="mt-2 text-lg text-white/80">
+                Welcome back, Dr. {user?.profile?.full_name || 'Doctor'}!
+              </p>
+              <p className="text-sm text-white/70">
+                Specialization: {user?.profile?.specialization || 'N/A'}
               </p>
             </div>
-            
             <Button 
-              className="mt-4 md:mt-0 bg-white text-medical-blue hover:bg-gray-100"
+              variant="outline" 
+              className="mt-4 md:mt-0 bg-white text-medical-blue hover:bg-gray-100 font-semibold py-2 px-4 rounded-lg shadow"
+              onClick={() => navigate('/doctor/appointments')}
             >
-              Update Availability
+              View All Appointments
             </Button>
           </div>
         </CardContent>
       </Card>
       
-      {/* Stats Overview */}
+      {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardContent className="p-6 flex items-center">
@@ -207,10 +212,10 @@ const DoctorDashboard = () => {
         </Card>
       </div>
       
-      {/* Appointment Schedule */}
+      {/* Upcoming Appointments */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-800">Appointment Schedule</h2>
+          <h2 className="text-xl font-bold text-gray-800">Upcoming Appointments</h2>
           <Button 
             variant="outline" 
             className="text-sm"
@@ -392,7 +397,7 @@ const DoctorDashboard = () => {
         </Card>
       </div>
       
-      {/* Recent Patients */}
+      {/* Patient Overview (Simplified) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
           <div className="flex items-center justify-between mb-4">
