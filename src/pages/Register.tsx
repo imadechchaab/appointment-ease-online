@@ -9,17 +9,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Activity, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/components/ui/use-toast"; // Import useToast
 
 // Mock specializations
 const specializations = [
-  { id: '1', name: 'General Medicine' },
-  { id: '2', name: 'Cardiology' },
-  { id: '3', name: 'Neurology' },
-  { id: '4', name: 'Pediatrics' },
-  { id: '5', name: 'Dermatology' },
-  { id: '6', name: 'Orthopedics' },
-  { id: '7', name: 'Psychiatry' },
-  { id: '8', name: 'Gynecology' },
+  { id: 'Cardiology', name: 'Cardiology' },
+  { id: 'Neurology', name: 'Neurology' },
+  { id: 'Pediatrics', name: 'Pediatrics' },
+  { id: 'Dermatology', name: 'Dermatology' },
+  { id: 'Orthopedics', name: 'Orthopedics' },
+  { id: 'Psychiatry', name: 'Psychiatry' },
+  { id: 'Gynecology', name: 'Gynecology' },
+  { id: 'General Medicine', name: 'General Medicine' },
 ];
 
 const Register = () => {
@@ -27,7 +28,7 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [specializationId, setSpecializationId] = useState('');
+  const [specialization, setSpecialization] = useState(''); // Changed from specializationId
   const [role, setRole] = useState<'patient' | 'doctor'>('patient');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -35,7 +36,8 @@ const Register = () => {
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { register, loading: authLoading } = useAuth();
+  const { toast } = useToast(); // Initialize useToast
 
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
@@ -54,7 +56,7 @@ const Register = () => {
     if (password !== confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
-    if (role === 'doctor' && !specializationId) {
+    if (role === 'doctor' && !specialization) { // Changed from specializationId
       newErrors.specialization = 'Specialization is required';
     }
     
@@ -68,13 +70,17 @@ const Register = () => {
     
     setIsLoading(true);
     try {
-      await register(name, email, password, role, role === 'doctor' ? specializationId : undefined);
-      // Potentially redirect to a "pending approval" page for doctors
-      navigate(role === 'doctor' ? '/login?status=pending_approval' : `/${role}`); 
-    } catch (error) {
-      console.error('Registration error:', error);
-      // Add toast for error
-      setErrors({ form: 'Registration failed. Please try again.' });
+      await register(name, email, password, role, role === 'doctor' ? specialization : undefined);
+      // The register function in AuthContext shows a toast.
+      // Redirect to login page after successful registration.
+      // For doctors, include a query param to indicate pending approval.
+      const redirectPath = role === 'doctor' ? '/login?status=pending_approval' : '/login';
+      navigate(redirectPath); 
+    } catch (error: any) {
+      // Toast for specific errors handled in AuthContext's register
+      // General fallback error for the form
+      setErrors({ form: error.message || 'Registration failed. Please try again.' });
+      console.error('Registration page error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -92,6 +98,7 @@ const Register = () => {
           className={errors.name ? 'border-red-500' : ''}
           aria-invalid={!!errors.name}
           aria-describedby={errors.name ? `${role}-name-error` : undefined}
+          autoComplete="name"
         />
         {errors.name && <p id={`${role}-name-error`} className="text-red-500 text-xs mt-1">{errors.name}</p>}
       </div>
@@ -107,6 +114,7 @@ const Register = () => {
           className={errors.email ? 'border-red-500' : ''}
           aria-invalid={!!errors.email}
           aria-describedby={errors.email ? `${role}-email-error` : undefined}
+          autoComplete="email"
         />
         {errors.email && <p id={`${role}-email-error`} className="text-red-500 text-xs mt-1">{errors.email}</p>}
       </div>
@@ -115,15 +123,15 @@ const Register = () => {
         <div className="space-y-2">
           <Label htmlFor="specialization">Specialization</Label>
           <Select 
-            value={specializationId} 
-            onValueChange={setSpecializationId}
+            value={specialization}  // Changed from specializationId
+            onValueChange={setSpecialization} // Changed from setSpecializationId
           >
             <SelectTrigger className={errors.specialization ? 'border-red-500' : ''} aria-invalid={!!errors.specialization} aria-describedby={errors.specialization ? "specialization-error" : undefined}>
               <SelectValue placeholder="Select specialization" />
             </SelectTrigger>
             <SelectContent>
               {specializations.map(spec => (
-                <SelectItem key={spec.id} value={spec.id}>
+                <SelectItem key={spec.id} value={spec.name}> {/* Use spec.name as value if IDs are same as names, or ensure spec.id is what backend expects */}
                   {spec.name}
                 </SelectItem>
               ))}
@@ -145,6 +153,7 @@ const Register = () => {
             className={errors.password ? 'border-red-500' : ''}
             aria-invalid={!!errors.password}
             aria-describedby={errors.password ? `${role}-password-error` : undefined}
+            autoComplete="new-password"
           />
           <button 
             type="button"
@@ -170,6 +179,7 @@ const Register = () => {
             className={errors.confirmPassword ? 'border-red-500' : ''}
             aria-invalid={!!errors.confirmPassword}
             aria-describedby={errors.confirmPassword ? `${role}-confirmPassword-error` : undefined}
+            autoComplete="new-password"
           />
           <button 
             type="button"
@@ -185,7 +195,12 @@ const Register = () => {
 
       {role === 'doctor' && (
         <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-md border border-blue-200">
-          <p>Note: Doctor accounts require verification by an administrator before you can access all features. You will be notified once your account is approved.</p>
+          <p>Note: Doctor accounts require verification by an administrator. You will be notified once approved. After registration, please log in.</p>
+        </div>
+      )}
+       {role === 'patient' && (
+        <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-md border border-blue-200">
+          <p>After registration, you will be redirected to the login page. Please use your credentials to log in.</p>
         </div>
       )}
       
@@ -194,9 +209,9 @@ const Register = () => {
       <Button 
         type="submit" 
         className="w-full bg-medical-blue hover:bg-medical-darkblue"
-        disabled={isLoading}
+        disabled={isLoading || authLoading}
       >
-        {isLoading ? 'Creating Account...' : 'Create Account'}
+        {(isLoading || authLoading) ? 'Creating Account...' : 'Create Account'}
       </Button>
     </>
   );
@@ -224,6 +239,8 @@ const Register = () => {
           <Tabs defaultValue="patient" onValueChange={(value) => {
             setRole(value as 'patient' | 'doctor');
             setErrors({});
+            // Reset fields that might differ between roles if needed
+            setSpecialization(''); 
           }}>
             <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger value="patient">I'm a Patient</TabsTrigger>
@@ -231,6 +248,7 @@ const Register = () => {
             </TabsList>
             
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* The TabsContent structure with renderFormFields is good for shared fields */}
               <TabsContent value="patient" className="mt-0 pt-0">
                 {renderFormFields()}
               </TabsContent>

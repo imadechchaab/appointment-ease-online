@@ -1,77 +1,87 @@
-
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Activity, Eye, EyeOff } from 'lucide-react'; // Changed Calendar to Activity for logo
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Keep Tabs for role selection if needed, or simplify
+import { Activity, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from "@/components/ui/use-toast";
+
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'patient' | 'doctor' | 'admin'>('patient');
+  // Role selection on login is removed as role is determined by Supabase metadata
+  // const [role, setRole] = useState<'patient' | 'doctor' | 'admin'>('patient'); 
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const location = useLocation();
+  const { login, isAuthenticated, user, loading: authLoading } = useAuth();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (location.search.includes('status=pending_approval')) {
+      toast({
+        title: "Registration Submitted",
+        description: "Your doctor account registration is pending approval by an administrator.",
+        duration: 5000,
+      });
+      // Clean the query param
+      navigate('/login', { replace: true });
+    }
+  }, [location, navigate, toast]);
+
+  useEffect(() => {
+    if (isAuthenticated && user?.appRole && !authLoading) {
+      // If doctor is not approved, keep them on login or show specific message
+      if (user.appRole === 'doctor' && user.profile && 'is_approved' in user.profile && !user.profile.is_approved) {
+        toast({
+          title: "Account Pending Approval",
+          description: "Your doctor account is still pending approval. Please check back later.",
+          variant: "default",
+          duration: 7000,
+        });
+        // Optionally, log them out or prevent further navigation to dashboard
+        // For now, we just show a toast. The PrivateRoute should handle redirection if they try to access dashboard.
+      } else {
+        navigate(`/${user.appRole}`);
+      }
+    }
+  }, [isAuthenticated, user, navigate, authLoading, toast]);
+
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     
-    // Form validation
     if (!email.trim() || !password.trim()) {
-      // Consider adding a toast notification for errors
+      toast({ title: "Validation Error", description: "Email and password are required.", variant: "destructive" });
       return;
     }
     
     setIsLoading(true);
     
     try {
-      await login(email, password, role);
-      navigate(`/${role}`);
+      await login(email, password);
+      // Navigation is handled by useEffect based on isAuthenticated and user.appRole
     } catch (error) {
-      console.error('Login error:', error);
-      // Consider adding a toast notification for login failure
+      // Error toast is handled within the login function in AuthContext
+      console.error('Login page error:', error);
     } finally {
       setIsLoading(false);
     }
   };
   
-  // Demo login details for convenience
-  const demoLogins = {
-    patient: { email: 'patient@example.com', password: 'password123' },
-    doctor: { email: 'doctor@example.com', password: 'password123' },
-    admin: { email: 'admin@example.com', password: 'password123' }
-  };
-  
-  const handleDemoLogin = async () => {
-    setEmail(demoLogins[role].email);
-    setPassword(demoLogins[role].password);
-    
-    setIsLoading(true);
-    
-    try {
-      await login(demoLogins[role].email, demoLogins[role].password, role);
-      navigate(`/${role}`);
-    } catch (error) {
-      console.error('Demo login error:', error);
-      // Consider adding a toast notification for demo login failure
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="mb-8 flex items-center">
         <Link to="/" className="flex items-center">
           <div className="bg-medical-blue text-white p-2 rounded-md">
-            <Activity size={20} /> {/* Changed from Calendar to Activity */}
+            <Activity size={20} />
           </div>
-          <span className="text-2xl font-bold ml-2 text-gray-800">OnlineDoc</span> {/* Changed from MediBook */}
+          <span className="text-2xl font-bold ml-2 text-gray-800">OnlineDoc</span>
         </Link>
       </div>
       
@@ -84,78 +94,58 @@ const Login = () => {
         </CardHeader>
         
         <CardContent>
-          <Tabs defaultValue="patient" onValueChange={(value) => setRole(value as 'patient' | 'doctor' | 'admin')}>
-            <TabsList className="grid w-full grid-cols-3 mb-4">
-              <TabsTrigger value="patient">Patient</TabsTrigger>
-              <TabsTrigger value="doctor">Doctor</TabsTrigger>
-              <TabsTrigger value="admin">Admin</TabsTrigger>
-            </TabsList>
+          {/* Tabs for role selection removed as role is determined by Supabase */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input 
+                id="email" 
+                type="email" 
+                placeholder="name@example.com" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+              />
+            </div>
             
-            {/* Unified form for all tabs */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor={`${role}-email`}>Email</Label>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <Label htmlFor="password">Password</Label>
+                {/* <a href="#" className="text-xs text-medical-blue hover:underline">
+                  Forgot password? // TODO: Implement password reset
+                </a> */}
+              </div>
+              <div className="relative">
                 <Input 
-                  id={`${role}-email`} 
-                  type="email" 
-                  placeholder="name@example.com" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="password" 
+                  type={showPassword ? "text" : "password"} 
+                  placeholder="••••••••" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
+                  autoComplete="current-password"
                 />
+                <button 
+                  type="button"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <Label htmlFor={`${role}-password`}>Password</Label>
-                  <a href="#" className="text-xs text-medical-blue hover:underline">
-                    Forgot password?
-                  </a>
-                </div>
-                <div className="relative">
-                  <Input 
-                    id={`${role}-password`} 
-                    type={showPassword ? "text" : "password"} 
-                    placeholder="••••••••" 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                  <button 
-                    type="button"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              </div>
-              
-              <Button 
-                type="submit" 
-                className="w-full bg-medical-blue hover:bg-medical-darkblue"
-                disabled={isLoading}
-              >
-                {isLoading ? 'Logging in...' : 'Login'}
-              </Button>
-            </form>
-          </Tabs>
-          
-          <div className="mt-4">
+            </div>
+            
             <Button 
-              type="button" 
-              variant="outline" 
-              className="w-full"
-              onClick={handleDemoLogin}
-              disabled={isLoading}
+              type="submit" 
+              className="w-full bg-medical-blue hover:bg-medical-darkblue"
+              disabled={isLoading || authLoading}
             >
-              {isLoading ? 'Processing...' : `Try Demo ${role.charAt(0).toUpperCase() + role.slice(1)} Login`}
+              {(isLoading || authLoading) ? 'Logging in...' : 'Login'}
             </Button>
-          </div>
-          
-          {/* Removed "Or" separator and Google login button */}
-          
+          </form>
+          {/* Demo login button removed */}
         </CardContent>
         
         <CardFooter className="flex justify-center">

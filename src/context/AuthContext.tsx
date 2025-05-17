@@ -1,186 +1,261 @@
 
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from '@/integrations/supabase/client';
+import { Session, User as SupabaseUser } from '@supabase/supabase-js';
 
 // Define user types based on roles
-type UserRole = 'patient' | 'doctor' | 'admin';
+export type UserRole = 'patient' | 'doctor' | 'admin';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  specialization?: string; // For doctors
-  profileImage?: string;
+// Extended User interface to include profile data
+export interface UserProfileData {
+  id: string; // Profile table ID
+  user_id: string; // Corresponds to Supabase auth user ID
+  full_name: string | null;
+  email: string | null;
+  profile_image_url?: string | null;
+  specialization?: string | null; // For doctors
+  is_approved?: boolean | null; // For doctors
+}
+
+export interface User extends SupabaseUser {
+  profile: UserProfileData | null; // Holds data from patients, doctors, or admins table
+  appRole: UserRole | null; // Role derived from user_metadata or profile
 }
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   isAuthenticated: boolean;
   loading: boolean;
-  login: (email: string, password: string, role: UserRole) => Promise<void>;
-  register: (name: string, email: string, password: string, role: UserRole, specializationId?: string) => Promise<void>;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string, role: UserRole, specialization?: string) => Promise<void>;
+  logout: () => Promise<void>;
   hasRole: (roles: UserRole[]) => boolean;
 }
-
-// Initial mock data for demonstration
-const mockUsers = [
-  {
-    id: "1",
-    name: "John Patient",
-    email: "patient@example.com",
-    password: "password123",
-    role: "patient" as UserRole,
-    profileImage: "https://randomuser.me/api/portraits/men/32.jpg"
-  },
-  {
-    id: "2",
-    name: "Dr. Sarah Smith",
-    email: "doctor@example.com",
-    password: "password123",
-    role: "doctor" as UserRole,
-    specialization: "Cardiology",
-    profileImage: "https://randomuser.me/api/portraits/women/44.jpg"
-  },
-  {
-    id: "3",
-    name: "Admin User",
-    email: "admin@example.com",
-    password: "password123",
-    role: "admin" as UserRole,
-    profileImage: "https://randomuser.me/api/portraits/men/45.jpg"
-  }
-];
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  // Check if user is already logged in on component mount
-  useEffect(() => {
-    const storedUser = localStorage.getItem('medibook_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
-  }, []);
+  const fetchUserProfile = async (supabaseUser: SupabaseUser, role: UserRole): Promise<UserProfileData | null> => {
+    if (!supabaseUser) return null;
 
-  // Mock login function
-  const login = async (email: string, password: string, role: UserRole) => {
-    setLoading(true);
-    try {
-      // Mock API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Find user in mock data
-      const foundUser = mockUsers.find(u => u.email === email && u.password === password && u.role === role);
-      
-      if (foundUser) {
-        // Remove password from user object before storing
-        const { password, ...userWithoutPassword } = foundUser;
-        setUser(userWithoutPassword);
-        localStorage.setItem('medibook_user', JSON.stringify(userWithoutPassword));
+    let tableName = '';
+    if (role === 'patient') tableName = 'patients';
+    else if (role === 'doctor') tableName = 'doctors';
+    else if (role === 'admin') tableName = 'admins';
+    else return null;
+
+    console.log(`Fetching profile from ${tableName} for user ${supabaseUser.id} with role ${role}`);
+
+    const { data, error } = await supabase
+      .from(tableName)
+      .select('*')
+      .eq('user_id', supabaseUser.id)
+      .single();
+
+    if (error) {
+      console.error(`Error fetching ${role} profile:`, error);
+      // It's possible the profile hasn't been created yet if the trigger is slow or failed.
+      // For now, we return null. Consider retrying or specific error handling.
+      if (error.code === 'PGRST116') { // "Cannot read properties of null (reading 'pgrstResult')" or "JSON object requested, multiple (or no) rows returned"
         toast({
-          title: "Login successful",
-          description: `Welcome back, ${foundUser.name}!`
+          title: "Profile Not Found",
+          description: `Could not find a ${role} profile. This might be a temporary issue. Please try logging in again shortly.`,
+          variant: "destructive",
         });
       } else {
         toast({
-          title: "Login failed",
-          description: "Invalid email, password, or role. Please try again.",
-          variant: "destructive"
+          title: "Profile Fetch Error",
+          description: `Failed to fetch ${role} profile. ${error.message}`,
+          variant: "destructive",
         });
       }
-    } catch (error) {
-      toast({
-        title: "Login error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive"
-      });
-      console.error("Login error:", error);
-    } finally {
-      setLoading(false);
+      return null;
     }
+    console.log(`Fetched profile data for ${role}:`, data);
+    return data as UserProfileData;
   };
 
-  // Mock register function
-  const register = async (name: string, email: string, password: string, role: UserRole, specializationId?: string) => {
+  useEffect(() => {
+    setLoading(true);
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      setSession(session);
+      if (session?.user) {
+        const role = session.user.user_metadata?.role as UserRole;
+        if (role) {
+          const profile = await fetchUserProfile(session.user, role);
+          setUser({ ...session.user, profile, appRole: role });
+        } else {
+          setUser({ ...session.user, profile: null, appRole: null });
+           console.warn("User role not found in metadata during initial session load.");
+        }
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        setLoading(true);
+        setSession(session);
+        if (session?.user) {
+          const role = session.user.user_metadata?.role as UserRole;
+           console.log("Auth state changed. Event:", _event, "User metadata role:", role);
+          if (role) {
+            const profile = await fetchUserProfile(session.user, role);
+            setUser({ ...session.user, profile, appRole: role });
+          } else {
+             setUser({ ...session.user, profile: null, appRole: null });
+             console.warn("User role not found in metadata during auth state change.");
+          }
+        } else {
+          setUser(null);
+        }
+        setLoading(false);
+      }
+    );
+
+    return () => {
+      authListener?.unsubscribe();
+    };
+  }, []);
+
+
+  const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      // Mock API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Check if user already exists
-      const userExists = mockUsers.some(u => u.email === email);
-      
-      if (userExists) {
-        toast({
-          title: "Registration failed",
-          description: "This email is already registered. Please try logging in.",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Create new user
-      const newUser = {
-        id: `${mockUsers.length + 1}`,
-        name,
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
-        role,
-        specialization: specializationId ? "General Medicine" : undefined,
-        profileImage: `https://randomuser.me/api/portraits/${Math.random() > 0.5 ? 'men' : 'women'}/${Math.floor(Math.random() * 100)}.jpg`
-      };
-      
-      // Add to mock users
-      mockUsers.push(newUser);
-      
-      // Log user in
-      const { password: _, ...userWithoutPassword } = newUser;
-      setUser(userWithoutPassword);
-      localStorage.setItem('medibook_user', JSON.stringify(userWithoutPassword));
-      
-      toast({
-        title: "Registration successful",
-        description: `Welcome to MediBook, ${name}!`
       });
+
+      if (error) {
+        toast({
+          title: "Login failed",
+          description: error.message || "Invalid email or password. Please try again.",
+          variant: "destructive",
+        });
+        throw error;
+      }
+
+      if (data.user) {
+        const role = data.user.user_metadata?.role as UserRole;
+        console.log("Login successful. User metadata role:", role);
+        if (role) {
+          const profile = await fetchUserProfile(data.user, role);
+          setUser({ ...data.user, profile, appRole: role });
+          toast({
+            title: "Login successful",
+            description: `Welcome back, ${profile?.full_name || data.user.email}!`
+          });
+        } else {
+          // This case should ideally not happen if registration sets metadata correctly
+          setUser({ ...data.user, profile: null, appRole: null });
+           toast({
+            title: "Login successful, but role missing",
+            description: `Welcome back! However, your role information is missing. Please contact support.`,
+            variant: "destructive"
+          });
+           console.error("User role not found in metadata after login for user:", data.user.id);
+        }
+      }
     } catch (error) {
-      toast({
-        title: "Registration error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive"
-      });
-      console.error("Registration error:", error);
+      console.error("Login error:", error);
+      // Toast is handled in the error block above or if error is re-thrown
     } finally {
       setLoading(false);
     }
   };
 
-  // Logout function
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('medibook_user');
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out."
-    });
+  const register = async (name: string, email: string, password: string, role: UserRole, specialization?: string) => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            role: role, // This will be stored in auth.users.raw_user_meta_data
+            full_name: name, // For the trigger
+            specialization: role === 'doctor' ? specialization : undefined, // For the trigger
+          }
+        }
+      });
+
+      if (error) {
+        toast({
+          title: "Registration failed",
+          description: error.message || "Could not create account. Please try again.",
+          variant: "destructive",
+        });
+        throw error;
+      }
+
+      if (data.user) {
+        // The trigger should handle profile creation.
+        // We explicitly don't log the user in here. They need to verify email (if enabled) and then log in.
+        toast({
+          title: "Registration successful!",
+          description: "Please check your email to verify your account, then log in."
+        });
+      } else if (!data.session && !data.user) {
+        // If email confirmation is enabled, user and session will be null.
+         toast({
+          title: "Registration successful!",
+          description: "Please check your email to verify your account, then log in."
+        });
+      }
+      
+    } catch (error) {
+      console.error("Registration error:", error);
+      // Toast is handled in the error block above
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Check if user has any of the allowed roles
+  const logout = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        toast({
+          title: "Logout failed",
+          description: error.message || "Could not log out. Please try again.",
+          variant: "destructive",
+        });
+        throw error;
+      }
+      setUser(null);
+      setSession(null);
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out."
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const hasRole = (roles: UserRole[]) => {
-    if (!user) return false;
-    return roles.includes(user.role);
+    if (!user || !user.appRole) return false;
+    return roles.includes(user.appRole);
   };
 
   return (
     <AuthContext.Provider value={{ 
       user, 
-      isAuthenticated: !!user, 
+      session,
+      isAuthenticated: !!user && !!session, 
       loading, 
       login, 
       register, 
@@ -192,7 +267,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-// Custom hook to use the auth context
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
