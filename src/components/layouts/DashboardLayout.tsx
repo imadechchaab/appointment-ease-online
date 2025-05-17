@@ -1,4 +1,3 @@
-
 import { ReactNode, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
@@ -41,11 +40,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   };
   
   const handleLogout = () => {
-    logout();
-    navigate('/login');
+    logout(); // logout itself should handle navigation or AuthContext state change will trigger PrivateRoute
+    navigate('/login'); // Explicit navigation for immediate feedback
   };
   
-  const getInitials = (name: string = "User") => {
+  const getInitials = (name?: string | null) => {
+    if (!name) return "U";
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
@@ -53,7 +53,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navigationItems = {
     patient: [
       { name: 'Dashboard', icon: HomeIcon, path: '/patient' },
-      { name: 'Find Doctors', icon: Search, path: '/find-doctor' },
+      { name: 'Find Doctors', icon: Search, path: '/find-doctor' }, // Kept public for now, consider moving based on requirements
       { name: 'My Appointments', icon: Calendar, path: '/patient/appointments' },
       { name: 'Profile', icon: User, path: '/patient/profile' },
     ],
@@ -72,19 +72,25 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     ],
   };
 
-  // Get navigation items based on user role
-  const navItems = user?.role ? navigationItems[user.role as keyof typeof navigationItems] : [];
+  // Get navigation items based on user role (appRole)
+  const navItems = user?.appRole ? navigationItems[user.appRole] : [];
 
   // Determine current page title based on nav items
   const currentPage = navItems.find(item => 
     location.pathname === item.path || 
-    location.pathname.startsWith(item.path + (item.path === '/' ? '' : '/'))
+    (item.path !== '/' && item.path !== `/${user?.appRole}` && location.pathname.startsWith(item.path + '/')) ||
+    (item.path === `/${user?.appRole}` && location.pathname === item.path)
   );
   
   let pageTitle = currentPage ? currentPage.name : "Dashboard";
   if (location.pathname.includes('/book-appointment')) pageTitle = 'Book Appointment';
-  if (location.pathname.includes('/profile')) pageTitle = 'Profile Settings';
-  if (user?.name && !currentPage) pageTitle = `Welcome, ${user.name}`;
+  // Profile path is generic, title should be 'Profile Settings'
+  if (location.pathname.endsWith('/profile') && !currentPage) pageTitle = 'Profile Settings';
+  
+  // User?.profile?.full_name for welcome message
+  if (user?.profile?.full_name && !currentPage && !location.pathname.endsWith('/profile')) {
+    pageTitle = `Welcome, ${user.profile.full_name}`;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -128,7 +134,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                   to={item.path}
                   className={cn(
                     "flex items-center p-3 rounded-lg text-gray-700 hover:text-medical-blue transition-colors group",
-                    location.pathname === item.path || (item.path !== `/${user?.role}` && location.pathname.startsWith(item.path))
+                    location.pathname === item.path || (item.path !== `/${user?.appRole}` && location.pathname.startsWith(item.path))
                       ? "bg-medical-blue/10 text-medical-blue font-medium" 
                       : "hover:bg-gray-100"
                   )}
@@ -137,7 +143,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                   <item.icon 
                     size={20} 
                     className={cn(
-                      location.pathname === item.path || (item.path !== `/${user?.role}` && location.pathname.startsWith(item.path))
+                      location.pathname === item.path || (item.path !== `/${user?.appRole}` && location.pathname.startsWith(item.path))
                         ? "text-medical-blue" 
                         : "text-gray-500 group-hover:text-medical-blue"
                     )} 
@@ -151,17 +157,17 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         
         {/* User Profile */}
         <div className="p-4 border-t">
-          {user && (
+          {user && user.profile && user.appRole && ( // Ensure user, profile, and appRole exist
             <div className="flex items-center">
               <Avatar className="flex-shrink-0">
-                <AvatarImage src={user.profileImage || undefined} />
-                <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                <AvatarImage src={user.profile.profile_image_url || undefined} />
+                <AvatarFallback>{getInitials(user.profile.full_name)}</AvatarFallback>
               </Avatar>
               
               {sidebarOpen && (
                 <div className="ml-3 overflow-hidden">
-                  <p className="text-sm font-medium text-gray-800 truncate">{user.name}</p>
-                  <p className="text-xs text-gray-500 capitalize truncate">{user.role}</p>
+                  <p className="text-sm font-medium text-gray-800 truncate">{user.profile.full_name}</p>
+                  <p className="text-xs text-gray-500 capitalize truncate">{user.appRole}</p>
                 </div>
               )}
               
@@ -173,7 +179,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onClick={() => navigate(`/${user.role}/profile`)}>
+                    {/* Navigate to role-specific profile page */}
+                    <DropdownMenuItem onClick={() => navigate(`/${user.appRole}/profile`)}>
                       <User size={16} className="mr-2" />
                       Profile
                     </DropdownMenuItem>
@@ -187,7 +194,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               </div>
             </div>
           )}
-          {!user && sidebarOpen && (
+          {!user && sidebarOpen && ( // If user is not logged in
             <Button onClick={() => navigate('/login')} className="w-full">Login</Button>
           )}
         </div>
@@ -206,7 +213,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             {pageTitle}
           </h1>
 
-          {user?.role === 'patient' && !location.pathname.includes('/book-appointment') && (
+          {user?.appRole === 'patient' && !location.pathname.includes('/book-appointment') && (
             <Button onClick={() => navigate('/patient/book-appointment')} className="bg-medical-blue hover:bg-medical-darkblue">
               <Plus size={16} className="mr-2" />
               Book Appointment

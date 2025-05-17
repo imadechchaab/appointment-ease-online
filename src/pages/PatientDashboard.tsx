@@ -34,7 +34,7 @@ const upcomingAppointments = [
 // const recentMedicalRecords = [ ... ]; // This data is no longer used directly on this page.
 
 const PatientDashboard = () => {
-  const { user } = useAuth();
+  const { user } = useAuth(); // user contains profile and appRole
   const navigate = useNavigate();
   
   // Format date
@@ -50,7 +50,8 @@ const PatientDashboard = () => {
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold">Welcome, {user?.name}!</h2>
+              {/* Access name via user.profile.full_name */}
+              <h2 className="text-2xl font-bold">Welcome, {user?.profile?.full_name || 'User'}!</h2>
               <p className="mt-2 text-white/80">Your health dashboard is ready for you.</p>
             </div>
             

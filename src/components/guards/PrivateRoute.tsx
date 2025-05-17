@@ -1,11 +1,11 @@
 
 import { ReactElement } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth, UserRole } from '@/context/AuthContext'; // Import UserRole
 
 interface PrivateRouteProps {
   children: ReactElement;
-  allowedRoles: ('patient' | 'doctor' | 'admin')[];
+  allowedRoles: UserRole[]; // Use UserRole type
 }
 
 const PrivateRoute = ({ children, allowedRoles }: PrivateRouteProps) => {
@@ -19,15 +19,30 @@ const PrivateRoute = ({ children, allowedRoles }: PrivateRouteProps) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (user && !allowedRoles.includes(user.role)) {
-    // Redirect to appropriate dashboard based on role
-    if (user.role === 'patient') {
+  // Use user.appRole which is correctly typed as UserRole | null
+  if (user && user.appRole && !allowedRoles.includes(user.appRole)) {
+    // Redirect to appropriate dashboard based on appRole
+    if (user.appRole === 'patient') {
       return <Navigate to="/patient" replace />;
-    } else if (user.role === 'doctor') {
+    } else if (user.appRole === 'doctor') {
+      // Add check for doctor approval status before redirecting to doctor dashboard
+      if (user.profile && 'is_approved' in user.profile && !user.profile.is_approved) {
+        // If doctor is not approved, redirect to login or a pending page. For now, login.
+        // Consider a dedicated pending approval page/toast message on login page.
+        return <Navigate to="/login?status=pending_approval_redirect" replace />;
+      }
       return <Navigate to="/doctor" replace />;
-    } else if (user.role === 'admin') {
+    } else if (user.appRole === 'admin') {
       return <Navigate to="/admin" replace />;
     }
+    // Fallback if role is somehow not covered, though appRole should be one of the UserRole types
+    return <Navigate to="/login" replace />; 
+  }
+  
+  // If user.appRole is null but user is authenticated (should not happen with proper registration/login)
+  if (user && !user.appRole) {
+    console.warn("User is authenticated but appRole is null. Redirecting to login.");
+    return <Navigate to="/login" replace />;
   }
 
   return children;

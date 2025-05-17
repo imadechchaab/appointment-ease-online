@@ -1,8 +1,7 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/integrations/supabase/client';
-import { Session, User as SupabaseUser } from '@supabase/supabase-js';
+import { Session, User as SupabaseUser, Subscription } from '@supabase/supabase-js';
 
 // Define user types based on roles
 export type UserRole = 'patient' | 'doctor' | 'admin';
@@ -41,11 +40,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const [authSubscription, setAuthSubscription] = useState<Subscription | null>(null);
 
   const fetchUserProfile = async (supabaseUser: SupabaseUser, role: UserRole): Promise<UserProfileData | null> => {
     if (!supabaseUser) return null;
 
-    let tableName = '';
+    let tableName: 'patients' | 'doctors' | 'admins' | '' = '';
     if (role === 'patient') tableName = 'patients';
     else if (role === 'doctor') tableName = 'doctors';
     else if (role === 'admin') tableName = 'admins';
@@ -54,16 +54,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     console.log(`Fetching profile from ${tableName} for user ${supabaseUser.id} with role ${role}`);
 
     const { data, error } = await supabase
-      .from(tableName)
+      .from(tableName) // tableName is now correctly typed
       .select('*')
       .eq('user_id', supabaseUser.id)
       .single();
 
     if (error) {
       console.error(`Error fetching ${role} profile:`, error);
-      // It's possible the profile hasn't been created yet if the trigger is slow or failed.
-      // For now, we return null. Consider retrying or specific error handling.
-      if (error.code === 'PGRST116') { // "Cannot read properties of null (reading 'pgrstResult')" or "JSON object requested, multiple (or no) rows returned"
+      if (error.code === 'PGRST116') {
         toast({
           title: "Profile Not Found",
           description: `Could not find a ${role} profile. This might be a temporary issue. Please try logging in again shortly.`,
@@ -101,7 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
     });
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(
+    const { data: listener } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setLoading(true);
         setSession(session);
@@ -109,23 +107,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const role = session.user.user_metadata?.role as UserRole;
            console.log("Auth state changed. Event:", _event, "User metadata role:", role);
           if (role) {
-            const profile = await fetchUserProfile(session.user, role);
-            setUser({ ...session.user, profile, appRole: role });
+            // Defer profile fetching slightly to avoid potential race conditions on fast auth changes
+            setTimeout(async () => {
+              const profile = await fetchUserProfile(session.user, role);
+              setUser({ ...session.user, profile, appRole: role });
+              setLoading(false);
+            }, 0);
           } else {
              setUser({ ...session.user, profile: null, appRole: null });
              console.warn("User role not found in metadata during auth state change.");
+             setLoading(false);
           }
         } else {
           setUser(null);
+          setLoading(false);
         }
-        setLoading(false);
       }
     );
 
+    setAuthSubscription(listener.subscription); // Store the subscription
+
     return () => {
-      authListener?.unsubscribe();
+      authSubscription?.unsubscribe(); // Correctly unsubscribe
     };
-  }, []);
+  }, [authSubscription]); // Add authSubscription to dependency array
 
 
   const login = async (email: string, password: string) => {
@@ -149,14 +154,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const role = data.user.user_metadata?.role as UserRole;
         console.log("Login successful. User metadata role:", role);
         if (role) {
+          // Fetch profile immediately after login success
           const profile = await fetchUserProfile(data.user, role);
-          setUser({ ...data.user, profile, appRole: role });
+          setUser({ ...data.user, profile, appRole: role }); // Update user state
           toast({
             title: "Login successful",
             description: `Welcome back, ${profile?.full_name || data.user.email}!`
           });
+          // Navigation will be handled by useEffect in Login.tsx or PrivateRoute
         } else {
-          // This case should ideally not happen if registration sets metadata correctly
           setUser({ ...data.user, profile: null, appRole: null });
            toast({
             title: "Login successful, but role missing",
@@ -198,20 +204,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw error;
       }
 
-      if (data.user) {
-        // The trigger should handle profile creation.
-        // We explicitly don't log the user in here. They need to verify email (if enabled) and then log in.
-        toast({
-          title: "Registration successful!",
-          description: "Please check your email to verify your account, then log in."
-        });
-      } else if (!data.session && !data.user) {
-        // If email confirmation is enabled, user and session will be null.
-         toast({
-          title: "Registration successful!",
-          description: "Please check your email to verify your account, then log in."
-        });
-      }
+      // Regardless of user or session, show success and instruct to check email / log in.
+      // Supabase handles email verification flow. The trigger creates the profile.
+      toast({
+        title: "Registration successful!",
+        description: role === 'doctor' 
+          ? "Please check your email to verify your account. Your doctor profile is pending approval." 
+          : "Please check your email to verify your account, then log in."
+      });
       
     } catch (error) {
       console.error("Registration error:", error);
