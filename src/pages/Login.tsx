@@ -4,17 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Keep Tabs for role selection if needed, or simplify
 import { Activity, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth, UserRole } from '@/context/AuthContext';
 import { useToast } from "@/components/ui/use-toast";
-
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  // Role selection on login is removed as role is determined by Supabase metadata
-  // const [role, setRole] = useState<'patient' | 'doctor' | 'admin'>('patient'); 
+  const [selectedRole, setSelectedRole] = useState<UserRole>('patient');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
@@ -29,14 +27,12 @@ const Login = () => {
         description: "Your doctor account registration is pending approval by an administrator.",
         duration: 5000,
       });
-      // Clean the query param
       navigate('/login', { replace: true });
     }
   }, [location, navigate, toast]);
 
   useEffect(() => {
     if (isAuthenticated && user?.appRole && !authLoading) {
-      // If doctor is not approved, keep them on login or show specific message
       if (user.appRole === 'doctor' && user.profile && 'is_approved' in user.profile && !user.profile.is_approved) {
         toast({
           title: "Account Pending Approval",
@@ -44,14 +40,11 @@ const Login = () => {
           variant: "default",
           duration: 7000,
         });
-        // Optionally, log them out or prevent further navigation to dashboard
-        // For now, we just show a toast. The PrivateRoute should handle redirection if they try to access dashboard.
       } else {
         navigate(`/${user.appRole}`);
       }
     }
   }, [isAuthenticated, user, navigate, authLoading, toast]);
-
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -65,9 +58,7 @@ const Login = () => {
     
     try {
       await login(email, password);
-      // Navigation is handled by useEffect based on isAuthenticated and user.appRole
     } catch (error) {
-      // Error toast is handled within the login function in AuthContext
       console.error('Login page error:', error);
     } finally {
       setIsLoading(false);
@@ -89,13 +80,35 @@ const Login = () => {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Login to Your Account</CardTitle>
           <CardDescription className="text-center">
-            Enter your email and password to access your account
+            Select your role, then enter your email and password
           </CardDescription>
         </CardHeader>
         
         <CardContent>
-          {/* Tabs for role selection removed as role is determined by Supabase */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label className="font-medium">I am a:</Label>
+              <RadioGroup 
+                defaultValue="patient" 
+                className="flex space-x-4"
+                onValueChange={(value: string) => setSelectedRole(value as UserRole)}
+                value={selectedRole}
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="patient" id="role-patient" />
+                  <Label htmlFor="role-patient">Patient</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="doctor" id="role-doctor" />
+                  <Label htmlFor="role-doctor">Doctor</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="admin" id="role-admin" />
+                  <Label htmlFor="role-admin">Admin</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input 
@@ -112,9 +125,6 @@ const Login = () => {
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <Label htmlFor="password">Password</Label>
-                {/* <a href="#" className="text-xs text-medical-blue hover:underline">
-                  Forgot password? // TODO: Implement password reset
-                </a> */}
               </div>
               <div className="relative">
                 <Input 
@@ -145,7 +155,6 @@ const Login = () => {
               {(isLoading || authLoading) ? 'Logging in...' : 'Login'}
             </Button>
           </form>
-          {/* Demo login button removed */}
         </CardContent>
         
         <CardFooter className="flex justify-center">
